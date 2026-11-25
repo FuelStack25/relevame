@@ -25,7 +25,7 @@ const PASOS_GUIA = [
     icono: "i-personas",
     titulo: "¿Quién puede cubrir?",
     texto: `<p>Este botón muestra a quién está libre, ordenado por quién ha cubierto menos. Avisa si alguien ya tiene <strong>3 relevos esa semana</strong> o está al aire a esa hora.</p>
-            <p>Con el botón de mensaje le pides el relevo <strong>por WhatsApp</strong> con el texto ya escrito.</p>`,
+            <p>Con el botón de mensaje le pides el relevo <strong>por WhatsApp</strong> con el texto ya escrito. Si hay varios pendientes, <strong>Proponer quién cubre</strong> los reparte todos de una vez.</p>`,
   },
   {
     icono: "i-ausencia",
@@ -40,6 +40,8 @@ const PASOS_GUIA = [
             <div class="guia__atajos">
               <kbd>N</kbd><span>Registrar relevo</span>
               <kbd>A</kbd><span>Registrar ausencia</span>
+              <kbd>R</kbd><span>Proponer quién cubre los pendientes</span>
+              <kbd>C</kbd><span>Modo cabina (pantalla del estudio)</span>
               <kbd>/</kbd><span>Buscar en la bitácora</span>
               <kbd>1</kbd><span>… <kbd>5</kbd> cambiar de pantalla</span>
               <kbd>T</kbd><span>Tema claro u oscuro</span>

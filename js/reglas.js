@@ -243,6 +243,46 @@ function sugerirRelevos(datos, { fecha, inicio, fin, titularId, ignorarId = null
     );
 }
 
+/* ---------- Resolver pendientes de una vez ---------- */
+
+/** Pendientes que todavía no terminan (aún se puede buscar quién los cubra). */
+function pendientesPorVenir(datos, ahora = new Date()) {
+  const hoy = aISO(ahora);
+  const hora = `${String(ahora.getHours()).padStart(2, "0")}:${String(ahora.getMinutes()).padStart(2, "0")}`;
+  return datos.relevos
+    .filter(r => r.estado === "pendiente" && (r.fecha > hoy || (r.fecha === hoy && r.fin > hora)))
+    .sort((a, b) => a.fecha.localeCompare(b.fecha) || a.inicio.localeCompare(b.inicio));
+}
+
+/** ¿La persona falta ese día? (es titular de algún relevo registrado en esa fecha) */
+function faltaEseDia(datos, personaId, fechaISO) {
+  return datos.relevos.some(r => r.titularId === personaId && r.fecha === fechaISO);
+}
+
+/**
+ * Propone quién cubre cada pendiente, en orden de fecha.
+ * Trabaja sobre una COPIA de los datos: cada asignación propuesta cuenta
+ * para las siguientes, así nadie pasa de 3 por semana ni queda en dos
+ * programas a la vez dentro de la misma propuesta. Usa el mismo orden
+ * justo que las sugerencias (primero quien ha cubierto menos en el mes)
+ * y nunca propone a quien también falta ese día (incapacidad, vacaciones…):
+ * si no queda nadie, el pendiente queda sin propuesta para decidirlo a mano.
+ * Devuelve [{ relevo, persona | null, semana }]: `semana` = cuántos
+ * relevos tendría esa persona esa semana si se acepta.
+ */
+function proponerRelevos(datos, pendientes) {
+  const simulado = { ...datos, relevos: datos.relevos.map(r => ({ ...r })) };
+  return pendientes.map(pendiente => {
+    const elegido = sugerirRelevos(simulado, { ...pendiente, ignorarId: pendiente.id })
+      .find(s => s.disponible && !faltaEseDia(simulado, s.persona.id, pendiente.fecha));
+    if (!elegido) return { relevo: pendiente, persona: null, semana: 0 };
+    const copia = simulado.relevos.find(r => r.id === pendiente.id);
+    copia.estado = "cubierto";
+    copia.relevoId = elegido.persona.id;
+    return { relevo: pendiente, persona: elegido.persona, semana: elegido.semana + 1 };
+  });
+}
+
 /* ---------- Contador por persona (Requisito 07) ---------- */
 
 /**

@@ -28,6 +28,7 @@ function pintarHoy() {
   const porCubrir = pendientes.filter(r => !yaPaso(r));
   const atrasados = pendientes.filter(yaPaso);
   const MAX_ATRASADOS = 5;
+  const porVenir = pendientesPorVenir(datos).length; // todos los que aún se pueden cubrir, no solo hoy y mañana
 
   // Resumen de la semana actual
   const lunes = lunesDe(hoy);
@@ -84,6 +85,10 @@ function pintarHoy() {
         ${porCubrir.length ? `
           <ul class="alertas">${porCubrir.map(htmlAlertaPorCubrir).join("")}</ul>` : `
           <p class="tarjeta__nota tarjeta__nota--ok">${icono("i-check")} Nada pendiente por cubrir hoy ni mañana.</p>`}
+        ${porVenir ? `
+          <button class="boton boton--borde boton--ancho boton-resolver" type="button" data-accion="resolver" title="Atajo: R">
+            ${icono("i-chispa")} Proponer quién cubre ${porVenir === 1 ? "el pendiente" : `los ${porVenir} pendientes`}
+          </button>` : ""}
         ${atrasados.length ? `
           <h3 class="alertas__grupo">Ya pasaron <span class="tarjeta__sub">¿se cubrieron o no salieron al aire?</span></h3>
           <ul class="alertas">${atrasados.slice(0, MAX_ATRASADOS).map(htmlAlertaAtrasada).join("")}</ul>
@@ -221,6 +226,10 @@ function htmlAlertaAtrasada(r) {
  */
 function htmlTarjetaAire() {
   const ahora = alAireAhora(datos);
+  const botonCabina = datos.programas.length ? `
+    <button class="boton boton--texto boton--chico aire__cabina" type="button" data-accion="cabina" title="Atajo: C">
+      ${icono("i-cabina")} Modo cabina
+    </button>` : "";
   if (!ahora) {
     const siguiente = programasDelDia(datos, hoyISO()).find(p => p.inicio > horaAhora());
     return `
@@ -230,6 +239,7 @@ function htmlTarjetaAire() {
         <p class="aire__persona texto-suave">${siguiente
           ? `Sigue «${esc(siguiente.nombre)}» a las <span class="mono">${siguiente.inicio}</span>`
           : "Onda Viva transmite de lunes a sábado."}</p>
+        ${botonCabina}
       </article>`;
   }
 
@@ -263,5 +273,6 @@ function htmlTarjetaAire() {
       ${relevo ? `<div class="aire__estado">${insigniaEstado(relevo.estado)}</div>` : ""}
       <div class="vu" role="img" aria-label="Avance del programa: faltan ${faltan} minutos">${leds}</div>
       <div class="vu__texto" aria-hidden="true"><span>${programa.inicio}</span><span>faltan ${faltan} min</span><span>${programa.fin}</span></div>
+      ${botonCabina}
     </article>`;
 }

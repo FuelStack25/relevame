@@ -231,6 +231,8 @@ function prepararClicsGenerales() {
       else if (que === "ir-presentadores") irA("ajustes", "pegar-personas");
       else if (que === "nuevo-programa") abrirPrograma();
       else if (que === "cargar-ejemplo") cargarEjemplo();
+      else if (que === "resolver") abrirResolver();
+      else if (que === "cabina") abrirCabina();
       return;
     }
     const editar = evento.target.closest("[data-editar]");
@@ -256,6 +258,8 @@ function prepararAtajos() {
     const tecla = evento.key.toLowerCase();
     if (tecla === "n") { evento.preventDefault(); abrirFormulario(); }
     else if (tecla === "a") { evento.preventDefault(); abrirAusencia(); }
+    else if (tecla === "r") { evento.preventDefault(); abrirResolver(); }
+    else if (tecla === "c") { evento.preventDefault(); abrirCabina(); }
     else if (tecla === "t") { cambiarTema(); }
     else if (evento.key === "?") { evento.preventDefault(); abrirGuia(); }
     else if (evento.key === "/") {
@@ -317,6 +321,8 @@ function iniciar() {
   prepararAusencia();
   prepararFicha();
   prepararGuia();
+  prepararResolver();
+  prepararCabina();
   prepararParrilla();
   prepararBitacora();
   prepararReportes();
