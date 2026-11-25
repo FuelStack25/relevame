@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Relévame · Onda Viva</title>
+  <meta name="description" content="Registro de relevos de presentadores de Onda Viva.">
+  <meta name="theme-color" content="#0B0D10">
+  <link rel="icon" href="icons/icono.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icono-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Relévame">
+
+  <!-- Aplica el tema guardado ANTES de pintar, para que no parpadee -->
+  <script>
+    try {
+      if (localStorage.getItem("ondaviva.tema") === "claro") document.documentElement.dataset.tema = "claro";
+    } catch (e) { /* sin almacenamiento: se queda en oscuro */ }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+  <!-- ============ ÍCONOS ============
+       Íconos SVG en línea (trazos basados en Lucide, licencia ISC).
+       Se usan así: <svg class="icono"><use href="#i-reloj"/></svg> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-inicio" viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></symbol>
+      <symbol id="i-parrilla" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M9 10v12M15 10v12"/></symbol>
+      <symbol id="i-lista" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+      <symbol id="i-grafica" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16v-4M12 16V8M17 16v-7"/></symbol>
+      <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+      <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></symbol>
+      <symbol id="i-mic-off" viewBox="0 0 24 24"><path d="M2 2l20 20"/><path d="M18.9 13.2A7 7 0 0 0 19 12v-2"/><path d="M5 10v2a7 7 0 0 0 12 5"/><path d="M15 9.3V5a3 3 0 0 0-5.7-1.3"/><path d="M9 9v3a3 3 0 0 0 5.1 2.1"/><path d="M12 19v3"/></symbol>
+      <symbol id="i-mic" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><path d="M12 19v3"/></symbol>
+      <symbol id="i-mas" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></symbol>
+      <symbol id="i-lapiz" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></symbol>
+      <symbol id="i-papelera" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="i-alerta" viewBox="0 0 24 24"><path d="m21.7 18-8-14a2 2 0 0 0-3.4 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.7-3"/><path d="M12 9v4M12 17h.01"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-izq" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-der" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-personas" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></symbol>
+      <symbol id="i-deshacer" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+      <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+      <symbol id="i-buscar" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="i-luna" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+      <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M6.3 17.7l-1.4 1.4M19.1 4.9l-1.4 1.4"/></symbol>
+      <symbol id="i-ayuda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></symbol>
+      <symbol id="i-mensaje" viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 21l2.1-5.6A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8 11h.01M12 11h.01M16 11h.01"/></symbol>
+      <symbol id="i-ausencia" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18M10 14l4 4M14 14l-4 4"/></symbol>
+      <symbol id="i-persona" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></symbol>
+      <symbol id="i-telefono" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+      <symbol id="i-descargar" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+    </defs>
+  </svg>
+
+  <a class="saltar" href="#contenido">Saltar al contenido</a>
+
+  <!-- ============ CABECERA ============ -->
+  <header class="cabecera">
+    <div class="cabecera__fila">
+      <a class="marca" href="#hoy" aria-label="Relévame, ir a Hoy">
+        <svg class="marca__barras" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="10" width="4" height="10" rx="1"/>
+          <rect x="10" y="5" width="4" height="15" rx="1"/>
+          <rect x="17" y="12" width="4" height="8" rx="1"/>
+        </svg>
+        <span class="marca__texto">
+          <strong>Relévame</strong>
+          <span>Onda Viva · relevos</span>
+        </span>
+      </a>
+
+      <nav class="nav" aria-label="Secciones">
+        <a class="nav__enlace" href="#hoy" data-vista="hoy"><svg class="icono" aria-hidden="true"><use href="#i-inicio"/></svg><span>Hoy</span><span class="nav__insignia" id="nav-insignia" hidden></span></a>
+        <a class="nav__enlace" href="#parrilla" data-vista="parrilla"><svg class="icono" aria-hidden="true"><use href="#i-parrilla"/></svg><span>Parrilla</span></a>
+        <a class="nav__enlace" href="#bitacora" data-vista="bitacora"><svg class="icono" aria-hidden="true"><use href="#i-lista"/></svg><span>Bitácora</span></a>
+        <a class="nav__enlace" href="#reportes" data-vista="reportes"><svg class="icono" aria-hidden="true"><use href="#i-grafica"/></svg><span>Reportes</span></a>
+        <a class="nav__enlace" href="#ajustes" data-vista="ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span>Ajustes</span></a>
+      </nav>
+
+      <div class="al-aire" id="al-aire" role="status" aria-live="polite">
+        <span class="al-aire__punto" aria-hidden="true"></span>
+        <span class="al-aire__texto">Fuera del aire</span>
+      </div>
+
+      <button class="cab-boton" type="button" id="boton-tema" aria-label="Cambiar a tema claro" title="Cambiar tema (T)">
+        <svg class="icono icono-luna" aria-hidden="true"><use href="#i-luna"/></svg>
+        <svg class="icono icono-sol" aria-hidden="true"><use href="#i-sol"/></svg>
+      </button>
+      <button class="cab-boton" type="button" data-accion="guia" aria-label="Ayuda y atajos" title="Ayuda (?)">
+        <svg class="icono" aria-hidden="true"><use href="#i-ayuda"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Aviso que aparece mientras se ven los datos de ejemplo -->
+  <div class="aviso-ejemplo" id="aviso-ejemplo" hidden>
+    <p>Estás viendo <strong>datos de ejemplo</strong>. Puedes probar todo sin miedo.</p>
+    <button class="boton boton--claro boton--chico" type="button" data-accion="empezar-de-cero">Empezar de cero</button>
+  </div>
+
+  <!-- ============ CONTENIDO ============
+       Cada <section> es una vista. app.js muestra solo la activa. -->
+  <main id="contenido" class="contenido" tabindex="-1">
+    <section class="vista" id="vista-hoy" aria-labelledby="titulo-hoy"></section>
+    <section class="vista" id="vista-parrilla" aria-labelledby="titulo-parrilla" hidden></section>
+    <section class="vista" id="vista-bitacora" aria-labelledby="titulo-bitacora" hidden></section>
+    <section class="vista" id="vista-reportes" aria-labelledby="titulo-reportes" hidden></section>
+    <section class="vista" id="vista-ajustes" aria-labelledby="titulo-ajustes" hidden></section>
+  </main>
+
+  <!-- ============ FORMULARIO DE RELEVO ============ -->
+  <dialog class="panel" id="dialogo-relevo" aria-labelledby="titulo-form">
+    <form class="form" id="form-relevo" novalidate>
+      <header class="panel__cabecera">
+        <div class="panel__titulos">
+          <h2 id="titulo-form">Registrar relevo</h2>
+          <p class="panel__contexto" id="contexto-form" hidden></p>
+        </div>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </header>
+
+      <div class="panel__cuerpo">
+        <div class="resumen-errores" id="resumen-errores" role="alert" tabindex="-1" hidden></div>
+
+        <div class="campo">
+          <label for="f-programa">Programa <span class="req">obligatorio</span></label>
+          <select id="f-programa" name="programaId"></select>
+          <p class="ayuda" id="f-programa-ayuda">Al elegirlo se llenan solos el horario y el titular.</p>
+          <p class="error" id="f-programa-error"></p>
+        </div>
+
+        <div class="campo">
+          <label for="f-fecha">Fecha <span class="req">obligatorio</span></label>
+          <input id="f-fecha" name="fecha" type="date">
+          <p class="error" id="f-fecha-error"></p>
+        </div>
+
+        <div class="campo-doble">
+          <div class="campo">
+            <label for="f-inicio">Empieza</label>
+            <input id="f-inicio" name="inicio" type="time" step="300">
+          </div>
+          <div class="campo">
+            <label for="f-fin">Termina</label>
+            <input id="f-fin" name="fin" type="time" step="300">
+          </div>
+          <p class="error campo-doble__error" id="f-inicio-error"></p>
+        </div>
+
+        <div class="campo">
+          <label for="f-titular">Titular · quien falta <span class="req">obligatorio</span></label>
+          <select id="f-titular" name="titularId"></select>
+          <p class="error" id="f-titular-error"></p>
+        </div>
+
+        <fieldset class="campo">
+          <legend>Estado <span class="req">obligatorio</span></legend>
+          <div class="segmentos" id="f-estado">
+            <label class="segmento segmento--pendiente">
+              <input type="radio" name="estado" value="pendiente">
+              <svg class="icono" aria-hidden="true"><use href="#i-reloj"/></svg>
+              <span>Pendiente</span>
+            </label>
+            <label class="segmento segmento--cubierto">
+              <input type="radio" name="estado" value="cubierto">
+              <svg class="icono" aria-hidden="true"><use href="#i-check"/></svg>
+              <span>Cubierto</span>
+            </label>
+            <label class="segmento segmento--sin-cubrir">
+              <input type="radio" name="estado" value="sin-cubrir">
+              <svg class="icono" aria-hidden="true"><use href="#i-mic-off"/></svg>
+              <span>Sin cubrir</span>
+            </label>
+          </div>
+          <p class="ayuda" id="f-estado-ayuda"></p>
+          <p class="error" id="f-estado-error"></p>
+        </fieldset>
+
+        <div class="campo" id="campo-relevo">
+          <label for="f-relevo">Relevo · quien cubre <span class="req">obligatorio si está cubierto</span></label>
+          <select id="f-relevo" name="relevoId"></select>
+          <p class="ayuda" id="f-relevo-ayuda"></p>
+          <p class="error" id="f-relevo-error"></p>
+        </div>
+
+        <!-- Sugerencias: quién puede cubrir -->
+        <div class="sugerencias">
+          <button class="boton boton--borde boton--ancho" type="button" id="boton-sugerir" aria-expanded="false" aria-controls="lista-sugerencias">
+            <svg class="icono" aria-hidden="true"><use href="#i-personas"/></svg>
+            ¿Quién puede cubrir?
+          </button>
+          <div class="sugerencias__lista" id="lista-sugerencias" hidden></div>
+          <div class="avisar-equipo" id="avisar-equipo" hidden>
+            <a class="boton boton--whatsapp boton--ancho" id="enlace-avisar-equipo" href="#" target="_blank" rel="noopener">
+              <svg class="icono" aria-hidden="true"><use href="#i-mensaje"/></svg>
+              Avisar al equipo por WhatsApp
+            </a>
+            <p class="ayuda">Abre WhatsApp con el mensaje listo para enviarlo al grupo del equipo.</p>
+          </div>
+        </div>
+
+        <div class="campo">
+          <label for="f-motivo">Motivo</label>
+          <select id="f-motivo" name="motivo"></select>
+        </div>
+
+        <div class="campo">
+          <label for="f-observaciones">Observaciones</label>
+          <textarea id="f-observaciones" name="observaciones" rows="2" maxlength="300" placeholder="Ej.: Avisó a las 6:30 a. m."></textarea>
+        </div>
+      </div>
+
+      <footer class="panel__pie">
+        <button class="boton boton--peligro-texto" type="button" id="boton-borrar-relevo" hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-papelera"/></svg> Borrar
+        </button>
+        <span class="separador"></span>
+        <button class="boton boton--borde" type="button" data-cerrar>Cancelar</button>
+        <button class="boton boton--principal" type="submit">Guardar relevo</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ============ AUSENCIA DE VARIOS DÍAS ============ -->
+  <dialog class="panel" id="dialogo-ausencia" aria-labelledby="titulo-ausencia">
+    <form class="form" id="form-ausencia" novalidate>
+      <header class="panel__cabecera">
+        <h2 id="titulo-ausencia">Registrar ausencia</h2>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="panel__cuerpo">
+        <p class="ayuda" style="margin-bottom:16px">Para incapacidades, vacaciones o permisos de varios días: se crean de una vez los relevos <strong>pendientes</strong> de todos sus programas.</p>
+        <div class="campo">
+          <label for="a-persona">¿Quién falta?</label>
+          <select id="a-persona"></select>
+          <p class="error" id="a-persona-error"></p>
+        </div>
+        <div class="campo-doble">
+          <div class="campo">
+            <label for="a-desde">Desde</label>
+            <input id="a-desde" type="date">
+          </div>
+          <div class="campo">
+            <label for="a-hasta">Hasta</label>
+            <input id="a-hasta" type="date">
+          </div>
+          <p class="error campo-doble__error" id="a-desde-error"></p>
+        </div>
+        <div class="campo">
+          <label for="a-motivo">Motivo</label>
+          <select id="a-motivo"></select>
+        </div>
+        <div class="campo">
+          <label for="a-observaciones">Observaciones</label>
+          <textarea id="a-observaciones" rows="2" maxlength="300" placeholder="Ej.: Incapacidad médica de 5 días"></textarea>
+        </div>
+        <div class="vista-previa" id="a-vista-previa" aria-live="polite"></div>
+      </div>
+      <footer class="panel__pie">
+        <span class="separador"></span>
+        <button class="boton boton--borde" type="button" data-cerrar>Cancelar</button>
+        <button class="boton boton--principal" type="submit" id="a-guardar">Crear pendientes</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- ============ FICHA DEL PRESENTADOR ============ -->
+  <dialog class="panel" id="dialogo-ficha" aria-labelledby="ficha-nombre">
+    <div class="form">
+      <header class="panel__cabecera">
+        <h2>Ficha del presentador</h2>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="panel__cuerpo" id="ficha-cuerpo"></div>
+    </div>
+  </dialog>
+
+  <!-- ============ GUÍA DE PRIMER USO ============ -->
+  <dialog class="guia" id="dialogo-guia" aria-labelledby="guia-titulo">
+    <div class="guia__cuerpo" id="guia-cuerpo"></div>
+  </dialog>
+
+  <!-- ============ DIÁLOGO DE CONFIRMACIÓN ============ -->
+  <dialog class="confirmar" id="dialogo-confirmar" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-mensaje">
+    <form method="dialog" class="confirmar__form">
+      <h2 id="confirmar-titulo"></h2>
+      <div id="confirmar-mensaje" class="confirmar__mensaje"></div>
+      <div class="campo" id="confirmar-palabra" hidden>
+        <label for="confirmar-input"></label>
+        <input id="confirmar-input" type="text" autocomplete="off">
+      </div>
+      <div class="confirmar__botones">
+        <button class="boton boton--borde" value="no">Cancelar</button>
+        <button class="boton boton--peligro" value="si" id="confirmar-aceptar">Sí, borrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- ============ DIÁLOGO DE PROGRAMA (Ajustes) ============ -->
+  <dialog class="panel" id="dialogo-programa" aria-labelledby="titulo-programa">
+    <form class="form" id="form-programa" novalidate>
+      <header class="panel__cabecera">
+        <h2 id="titulo-programa">Programa</h2>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="panel__cuerpo">
+        <div class="campo">
+          <label for="p-nombre">Nombre del programa</label>
+          <input id="p-nombre" type="text" maxlength="60">
+          <p class="error" id="p-nombre-error"></p>
+        </div>
+        <fieldset class="campo">
+          <legend>Días al aire</legend>
+          <div class="dias" id="p-dias"></div>
+          <p class="error" id="p-dias-error"></p>
+        </fieldset>
+        <div class="campo-doble">
+          <div class="campo">
+            <label for="p-inicio">Empieza</label>
+            <input id="p-inicio" type="time" step="300">
+          </div>
+          <div class="campo">
+            <label for="p-fin">Termina</label>
+            <input id="p-fin" type="time" step="300">
+          </div>
+          <p class="error campo-doble__error" id="p-inicio-error"></p>
+        </div>
+        <div class="campo">
+          <label for="p-titular">Titular</label>
+          <select id="p-titular"></select>
+          <p class="error" id="p-titular-error"></p>
+        </div>
+      </div>
+      <footer class="panel__pie">
+        <span class="separador"></span>
+        <button class="boton boton--borde" type="button" data-cerrar>Cancelar</button>
+        <button class="boton boton--principal" type="submit">Guardar programa</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Avisos breves (toasts) -->
+  <div class="avisos" id="avisos" aria-live="polite"></div>
+
+  <!-- El orden importa: cada archivo usa funciones de los anteriores.
+       Se usan <script> normales (no módulos) para que el sitio funcione
+       incluso abriendo index.html con doble clic. -->
+  <script src="js/formato.js"></script>
+  <script src="js/almacen.js"></script>
+  <script src="js/reglas.js"></script>
+  <script src="js/datos-ejemplo.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/whatsapp.js"></script>
+  <script src="js/formulario.js"></script>
+  <script src="js/ausencia.js"></script>
+  <script src="js/ficha.js"></script>
+  <script src="js/guia.js"></script>
+  <script src="js/vistas/hoy.js"></script>
+  <script src="js/vistas/parrilla.js"></script>
+  <script src="js/vistas/bitacora.js"></script>
+  <script src="js/vistas/reportes.js"></script>
+  <script src="js/vistas/ajustes.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
