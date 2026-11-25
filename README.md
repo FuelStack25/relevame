@@ -27,6 +27,7 @@ js/ficha.js              Ficha de cada presentador
 js/guia.js               Guía de primer uso y atajos
 js/resolver.js           Proponer quién cubre todos los pendientes de una vez
 js/cabina.js             Modo Cabina: pantalla del estudio
+js/voz.js                Dictar un relevo por voz (entiende quién falta, programa, día y quién cubre)
 js/vistas/*.js           Una pantalla por archivo: hoy, parrilla, bitácora, reportes, ajustes
 js/app.js                Arranque, navegación, tema, atajos y app instalable
 ```
@@ -56,7 +57,7 @@ js/app.js                Arranque, navegación, tema, atajos y app instalable
 - **Guía de primer uso** de 5 pasos y botón de ayuda.
 - **Ficha del presentador**: cupo, saldo, horas e historial de cada persona.
 - **Parrilla semanal** tipo emisora y **medidor VU** del programa que está al aire.
-- **Tema oscuro / claro** y **atajos de teclado**: `N` relevo, `A` ausencia, `R` proponer, `C` cabina, `/` buscar, `1`–`5` pantallas, `T` tema, `?` ayuda.
+- **Tema oscuro / claro** y **atajos de teclado**: `N` relevo, `A` ausencia, `R` proponer, `C` cabina, `V` dictar, `/` buscar, `1`–`5` pantallas, `T` tema, `?` ayuda.
 - **App instalable** que funciona sin internet.
 - **Nada pendiente se pierde**: los pendientes que ya pasaron siguen en *Hoy* con respuesta en un toque
   (*Se cubrió* / *No salió*, con Deshacer), y la pestaña *Hoy* muestra cuántos hay por resolver.
@@ -67,6 +68,9 @@ js/app.js                Arranque, navegación, tema, atajos y app instalable
 - **Modo Cabina** (`C`): pantalla completa para el televisor del estudio con luz AL AIRE, reloj, cuenta regresiva
   y lo que sigue; mantiene la pantalla encendida.
 - **Primeros pasos** al empezar de cero y **pegar la lista** completa de presentadores.
+- **Dictar por voz** (`V`): «Laura Gómez no viene mañana a Despierta Onda, la cubre Andrés Pinto» llena el formulario.
+- **Resumen de la semana por WhatsApp** para el grupo del equipo, desde Hoy o la Parrilla.
+- **Mapa de calor** en Reportes: qué días y horas necesitan más relevos y dónde un programa no salió al aire.
 
 ## Publicar en GitHub Pages
 1. Crear un repositorio y subir esta carpeta.

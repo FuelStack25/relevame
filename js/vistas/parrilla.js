@@ -37,14 +37,21 @@ function pintarParrilla() {
   vista.innerHTML = `
     <div class="vista__encabezado">
       <div>
-        <p class="sobretitulo">Toca un programa para registrar o ver su relevo</p>
+        <p class="sobretitulo">Programación de la semana</p>
         <h1 id="titulo-parrilla">Parrilla</h1>
+        <p class="vista__ayuda">Toca un programa para registrar o ver su relevo.</p>
       </div>
-      <div class="semana-nav" role="group" aria-label="Cambiar de semana">
-        <button class="boton-icono boton-icono--borde" type="button" data-semana="-7" aria-label="Semana anterior">${icono("i-izq")}</button>
-        <span class="semana-nav__texto">${rangoCorto(dias[0], dias[5])}</span>
-        <button class="boton-icono boton-icono--borde" type="button" data-semana="7" aria-label="Semana siguiente">${icono("i-der")}</button>
-        <button class="boton boton--borde boton--chico" type="button" data-semana="hoy" ${esEstaSemana ? "disabled" : ""}>Esta semana</button>
+      <div class="vista__acciones">
+        <div class="semana-nav" role="group" aria-label="Cambiar de semana">
+          <button class="boton-icono boton-icono--borde" type="button" data-semana="-7" aria-label="Semana anterior">${icono("i-izq")}</button>
+          <span class="semana-nav__texto">${rangoCorto(dias[0], dias[5])}</span>
+          <button class="boton-icono boton-icono--borde" type="button" data-semana="7" aria-label="Semana siguiente">${icono("i-der")}</button>
+          <button class="boton boton--borde boton--chico" type="button" data-semana="hoy" ${esEstaSemana ? "disabled" : ""}>Esta semana</button>
+        </div>
+        <a class="boton boton--whatsapp boton--chico" href="${esc(enlaceWhatsApp("", mensajeResumenSemana(Parrilla.lunes)))}"
+           target="_blank" rel="noopener" title="Abre WhatsApp con el resumen listo para el grupo del equipo">
+          ${icono("i-mensaje")} Enviar resumen al grupo
+        </a>
       </div>
     </div>
 

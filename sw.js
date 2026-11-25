@@ -7,7 +7,7 @@
    VERSION para que los usuarios reciban la versión nueva.
    ========================================================== */
 
-const VERSION = "relevame-v3";
+const VERSION = "relevame-v4";
 
 const ARCHIVOS = [
   "./",
@@ -26,6 +26,7 @@ const ARCHIVOS = [
   "./js/guia.js",
   "./js/resolver.js",
   "./js/cabina.js",
+  "./js/voz.js",
   "./js/vistas/hoy.js",
   "./js/vistas/parrilla.js",
   "./js/vistas/bitacora.js",

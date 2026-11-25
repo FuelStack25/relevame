@@ -252,7 +252,7 @@ function prepararAtajos() {
     if (evento.ctrlKey || evento.metaKey || evento.altKey) return;
     const objetivo = evento.target;
     const escribiendo = objetivo.closest("input, textarea, select, [contenteditable='true']");
-    const hayDialogo = document.querySelector("dialog[open]");
+    const hayDialogo = document.querySelector("dialog[open]") || cabinaAbierta();
     if (escribiendo || hayDialogo) return;
 
     const tecla = evento.key.toLowerCase();
@@ -260,6 +260,11 @@ function prepararAtajos() {
     else if (tecla === "a") { evento.preventDefault(); abrirAusencia(); }
     else if (tecla === "r") { evento.preventDefault(); abrirResolver(); }
     else if (tecla === "c") { evento.preventDefault(); abrirCabina(); }
+    else if (tecla === "v") {
+      evento.preventDefault();
+      abrirFormulario();
+      if (document.getElementById("dialogo-relevo").open) empezarDictado();
+    }
     else if (tecla === "t") { cambiarTema(); }
     else if (evento.key === "?") { evento.preventDefault(); abrirGuia(); }
     else if (evento.key === "/") {
@@ -323,6 +328,7 @@ function iniciar() {
   prepararGuia();
   prepararResolver();
   prepararCabina();
+  prepararVoz();
   prepararParrilla();
   prepararBitacora();
   prepararReportes();

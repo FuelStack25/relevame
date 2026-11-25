@@ -10,6 +10,7 @@
 const Reporte = { mes: null }; // "2026-11"
 
 function pintarReportes() {
+  document.querySelector(".globo")?.setAttribute("hidden", ""); // por si quedó visible el globo del mapa de calor
   if (!Reporte.mes) Reporte.mes = hoyISO().slice(0, 7);
   const mes = Reporte.mes;
   const [anio, numMes] = mes.split("-").map(Number);
@@ -90,7 +91,10 @@ function pintarReportes() {
       </article>
     </div>
 
-    <h2 class="seccion-titulo salto-pagina">Contador general <span class="seccion-titulo__sub">Todo el historial</span></h2>
+    <h2 class="seccion-titulo salto-pagina">¿Dónde se cae la parrilla? <span class="seccion-titulo__sub">Todo el historial</span></h2>
+    <article class="tarjeta">${htmlMapaCalor()}</article>
+
+    <h2 class="seccion-titulo">Contador general <span class="seccion-titulo__sub">Todo el historial</span></h2>
     <article class="tarjeta">
       <p class="tarjeta__nota">
         <strong>Saldo de equidad</strong> = relevos que hizo − veces que lo relevaron.
@@ -241,10 +245,137 @@ function graficaHoras(filas) {
     </ol>`;
 }
 
+/* ---------- Mapa de calor: día × hora (dónde se necesitan más relevos) ---------- */
+
+/**
+ * Cada celda = cuántos relevos tocaron esa hora ese día de la semana, en todo
+ * el historial. Un solo color (ámbar) de claro a oscuro: más oscuro = más
+ * relevos. Un punto rojo marca donde algún programa no salió al aire.
+ * Arriba va la conclusión escrita, para no tener que descifrar la gráfica.
+ */
+function htmlMapaCalor() {
+  const programas = datos.programas.filter(programaActivo);
+  if (!programas.length || !datos.relevos.length) {
+    return `<p class="tarjeta__nota">Cuando haya relevos registrados, aquí verás qué días y horas fallan más.</p>`;
+  }
+
+  const DIAS = [1, 2, 3, 4, 5, 6]; // lunes a sábado
+  const desde = Math.floor(Math.min(...programas.map(p => aMinutos(p.inicio))) / 60);
+  const hasta = Math.ceil(Math.max(...programas.map(p => aMinutos(p.fin))) / 60);
+  const horas = Array.from({ length: hasta - desde }, (_, i) => desde + i);
+  const hh = h => `${String(h).padStart(2, "0")}:00`;
+  const cruzaHora = (inicio, fin, h) => aMinutos(inicio) < (h + 1) * 60 && h * 60 < aMinutos(fin);
+
+  // Celdas: { relevos, sinCubrir, alAire (¿hay programa a esa hora?) }
+  const celda = {};
+  for (const d of DIAS) for (const h of horas) {
+    celda[`${d}-${h}`] = {
+      relevos: 0, sinCubrir: 0,
+      alAire: programas.some(p => p.dias.includes(d) && cruzaHora(p.inicio, p.fin, h)),
+    };
+  }
+  for (const r of datos.relevos) {
+    const d = diaSemana(r.fecha);
+    if (d === 0) continue;
+    for (const h of horas) {
+      if (!cruzaHora(r.inicio, r.fin, h)) continue;
+      const c = celda[`${d}-${h}`];
+      c.relevos += 1;
+      if (r.estado === "sin-cubrir") c.sinCubrir += 1;
+    }
+  }
+
+  const maximo = Math.max(1, ...Object.values(celda).map(c => c.relevos));
+  const nivel = n => (n === 0 ? 0 : Math.min(5, Math.ceil((n / maximo) * 5))); // 0 a 5
+
+  // Conclusión: el programa y día de la semana con más relevos
+  const porPrograma = {};
+  for (const r of datos.relevos) {
+    const clave = `${r.programaId}|${diaSemana(r.fecha)}`;
+    porPrograma[clave] ??= { programaId: r.programaId, dia: diaSemana(r.fecha), total: 0, sinCubrir: 0 };
+    porPrograma[clave].total += 1;
+    if (r.estado === "sin-cubrir") porPrograma[clave].sinCubrir += 1;
+  }
+  const peor = Object.values(porPrograma).sort((a, b) => b.total - a.total || b.sinCubrir - a.sinCubrir)[0];
+  const programaPeor = buscarPrograma(datos, peor.programaId);
+  const conclusion = `Donde más se necesita relevo: <strong>los ${DIAS_LARGOS[peor.dia]} en «${esc(nombrePrograma(datos, peor.programaId))}»</strong>` +
+    (programaPeor ? ` (${horario(programaPeor.inicio, programaPeor.fin)})` : "") +
+    ` · ${peor.total} ${peor.total === 1 ? "relevo" : "relevos"}` +
+    (peor.sinCubrir ? `, ${peor.sinCubrir} sin salir al aire` : "") + ".";
+
+  const encabezado = `<div class="calor__esquina"></div>` +
+    DIAS.map(d => `<div class="calor__dia">${DIAS_CORTOS[d]}</div>`).join("");
+  const filas = horas.map(h => `
+    <div class="calor__hora mono">${hh(h)}</div>
+    ${DIAS.map(d => {
+      const c = celda[`${d}-${h}`];
+      if (!c.alAire && !c.relevos) return `<div class="calor__celda calor__celda--vacia" aria-hidden="true"></div>`;
+      const texto = `${DIAS_LARGOS[d]} ${hh(h)}–${hh(h + 1)}: ${c.relevos === 1 ? "1 relevo" : `${c.relevos} relevos`}` +
+        (c.sinCubrir ? `, ${c.sinCubrir} sin salir al aire` : "");
+      return `<div class="calor__celda calor__celda--n${nivel(c.relevos)}${c.sinCubrir ? " calor__celda--falla" : ""}"
+        tabindex="0" role="img" aria-label="${texto}" data-tip="${texto}"></div>`;
+    }).join("")}`).join("");
+
+  const tabla = horas.map(h => `<tr><th scope="row" class="mono">${hh(h)}</th>${DIAS.map(d => {
+    const c = celda[`${d}-${h}`];
+    return `<td class="num mono">${c.alAire || c.relevos ? c.relevos + (c.sinCubrir ? ` (${c.sinCubrir} ✕)` : "") : "—"}</td>`;
+  }).join("")}</tr>`).join("");
+
+  return `
+    <p class="calor__conclusion">${conclusion}</p>
+    <div class="calor" style="--horas:${horas.length}">${encabezado}${filas}</div>
+    <div class="leyenda leyenda--chica calor__leyenda">
+      <span class="leyenda__item">Menos</span>
+      <span class="calor__escala" aria-hidden="true">${[1, 2, 3, 4, 5].map(n => `<span class="calor__celda--n${n}"></span>`).join("")}</span>
+      <span class="leyenda__item">Más relevos</span>
+      <span class="leyenda__item"><span class="calor__punto" aria-hidden="true"></span>Algún programa no salió al aire</span>
+      <span class="leyenda__item"><span class="calor__muestra-vacia" aria-hidden="true"></span>Sin programa a esa hora</span>
+    </div>
+    <details class="detalles-datos">
+      <summary>Ver los datos en tabla</summary>
+      <div class="tabla-desliza">
+        <table class="tabla tabla--compacta">
+          <thead><tr><th scope="col">Hora</th>${DIAS.map(d => `<th scope="col" class="num">${DIAS_CORTOS[d]}</th>`).join("")}</tr></thead>
+          <tbody>${tabla}</tbody>
+        </table>
+      </div>
+      <p class="ayuda">Relevos que tocaron esa hora; entre paréntesis, cuántos no salieron al aire.</p>
+    </details>`;
+}
+
+/** Globo con el detalle de una celda del mapa de calor (al pasar el mouse o con el teclado). */
+function prepararGloboCalor(vista) {
+  const globo = document.createElement("div");
+  globo.className = "globo";
+  globo.setAttribute("role", "presentation");
+  globo.hidden = true;
+  document.body.appendChild(globo);
+
+  const mostrar = evento => {
+    const celda = evento.target.closest?.("[data-tip]");
+    if (!celda) return;
+    globo.textContent = celda.dataset.tip;
+    globo.hidden = false;
+    const caja = celda.getBoundingClientRect();
+    const ancho = globo.offsetWidth;
+    const x = Math.min(Math.max(8, caja.left + caja.width / 2 - ancho / 2), innerWidth - ancho - 8);
+    globo.style.left = `${x}px`;
+    globo.style.top = `${caja.top - globo.offsetHeight - 8 + scrollY}px`;
+  };
+  const ocultar = evento => {
+    if (evento.target.closest?.("[data-tip]")) globo.hidden = true;
+  };
+  vista.addEventListener("mouseover", mostrar);
+  vista.addEventListener("focusin", mostrar);
+  vista.addEventListener("mouseout", ocultar);
+  vista.addEventListener("focusout", ocultar);
+}
+
 /* ---------- Eventos ---------- */
 
 function prepararReportes() {
   const vista = document.getElementById("vista-reportes");
+  prepararGloboCalor(vista);
   vista.addEventListener("change", evento => {
     if (evento.target.id === "reporte-mes" && evento.target.value) {
       Reporte.mes = evento.target.value;

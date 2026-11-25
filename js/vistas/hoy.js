@@ -77,6 +77,8 @@ function pintarHoy() {
           ${cifra("cubierto", cuenta("cubierto"), `${icono("i-check")}cubiertos`)}
           ${cifra("sin-cubrir", cuenta("sin-cubrir"), `${icono("i-mic-off")}sin cubrir`)}
         </div>
+        <a class="boton boton--whatsapp boton--chico boton--ancho tarjeta__accion" href="${esc(enlaceWhatsApp("", mensajeResumenSemana(lunes)))}"
+           target="_blank" rel="noopener">${icono("i-mensaje")} Enviar resumen de la semana al grupo</a>
       </article>
       </div>
       <div class="columna columna--der">

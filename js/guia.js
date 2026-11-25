@@ -42,6 +42,7 @@ const PASOS_GUIA = [
               <kbd>A</kbd><span>Registrar ausencia</span>
               <kbd>R</kbd><span>Proponer quién cubre los pendientes</span>
               <kbd>C</kbd><span>Modo cabina (pantalla del estudio)</span>
+              <kbd>V</kbd><span>Dictar un relevo por voz</span>
               <kbd>/</kbd><span>Buscar en la bitácora</span>
               <kbd>1</kbd><span>… <kbd>5</kbd> cambiar de pantalla</span>
               <kbd>T</kbd><span>Tema claro u oscuro</span>

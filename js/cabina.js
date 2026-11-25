@@ -8,31 +8,55 @@
    Siempre oscura, como una consola de radio.
    ========================================================== */
 
-const Cabina = { reloj: null, despierta: null };
+const Cabina = { reloj: null, despierta: null, volverA: null };
+
+// Lo que queda detrás de la cabina: se vuelve "inerte" (ni clic ni teclado) mientras está abierta
+const FONDO_CABINA = ["header.cabecera", "#aviso-ejemplo", "#contenido"];
+
+function cabinaAbierta() {
+  return !document.getElementById("cabina").hidden;
+}
 
 function prepararCabina() {
-  const dialogo = document.getElementById("dialogo-cabina");
-  prepararDialogo(dialogo);
-  dialogo.addEventListener("close", () => {
-    clearInterval(Cabina.reloj);
-    Cabina.despierta?.release().catch(() => {});
-    Cabina.despierta = null;
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  document.getElementById("cabina-salir").addEventListener("click", cerrarCabina);
+  // Sin pantalla completa, Esc llega a la página y cierra la cabina
+  document.addEventListener("keydown", evento => {
+    if (evento.key === "Escape" && cabinaAbierta()) cerrarCabina();
+  });
+  // Con pantalla completa, el navegador usa Esc para salir de ella: entonces se cierra también la cabina
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && cabinaAbierta()) cerrarCabina();
   });
 }
 
-async function abrirCabina() {
-  const dialogo = document.getElementById("dialogo-cabina");
-  if (dialogo.open) return;
-  // Primero la pantalla completa y DESPUÉS el diálogo: lo último que se abre
-  // queda encima. Al revés, la página tapaba la cabina.
-  try { await document.documentElement.requestFullscreen?.(); } catch (e) { /* sin pantalla completa: no pasa nada */ }
+/** Abre la cabina AL INSTANTE; la pantalla completa es un extra que no la bloquea. */
+function abrirCabina() {
+  const cabina = document.getElementById("cabina");
+  if (cabinaAbierta()) return;
+  Cabina.volverA = document.activeElement;
   pintarCabina();
-  dialogo.showModal();
-  dialogo.querySelector(".cabina__salir").focus();
+  cabina.hidden = false;
+  FONDO_CABINA.forEach(s => document.querySelector(s)?.setAttribute("inert", ""));
+  document.body.classList.add("con-cabina");
+  document.getElementById("cabina-salir").focus();
   Cabina.reloj = setInterval(pintarCabina, 1000);
+
+  // Pantalla completa de la cabina misma (si el navegador no lo permite, se ve igual dentro de la ventana)
+  cabina.requestFullscreen?.().catch(() => {});
   // Que la pantalla no se apague mientras está en la cabina (si el navegador lo permite)
-  try { Cabina.despierta = await navigator.wakeLock?.request("screen"); } catch (e) { /* no pasa nada */ }
+  navigator.wakeLock?.request("screen").then(l => { Cabina.despierta = l; }).catch(() => {});
+}
+
+function cerrarCabina() {
+  if (!cabinaAbierta()) return;
+  document.getElementById("cabina").hidden = true;
+  clearInterval(Cabina.reloj);
+  FONDO_CABINA.forEach(s => document.querySelector(s)?.removeAttribute("inert"));
+  document.body.classList.remove("con-cabina");
+  Cabina.despierta?.release().catch(() => {});
+  Cabina.despierta = null;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  Cabina.volverA?.focus?.();
 }
 
 /** Quién presenta un programa en una fecha, teniendo en cuenta los relevos. */

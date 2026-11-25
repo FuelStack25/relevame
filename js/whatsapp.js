@@ -38,6 +38,48 @@ function mensajePedirRelevo(persona, r) {
     `Respóndeme para dejarlo registrado en la bitácora. Gracias.\n— Coordinación Onda Viva`;
 }
 
+/**
+ * Resumen de los relevos de una semana (lunes a sábado) para el grupo del equipo:
+ *   *Relevos de la semana · 30 nov – 5 dic*
+ *   *Lun 30 nov*
+ *   • 07:00 Despierta Onda — cubre Paula Rojas (por Andrés Pinto)
+ */
+function mensajeResumenSemana(lunes) {
+  const sabado = sumarDias(lunes, 5);
+  const relevos = datos.relevos
+    .filter(r => r.fecha >= lunes && r.fecha <= sabado)
+    .sort((a, b) => a.fecha.localeCompare(b.fecha) || a.inicio.localeCompare(b.inicio));
+  const titulo = `*Relevos de la semana · ${rangoCorto(lunes, sabado)}*`;
+  const firma = "— Coordinación Onda Viva";
+  if (!relevos.length) return `${titulo}\nEsta semana no hay relevos registrados: todo el equipo al aire. 🎙️\n${firma}`;
+
+  const linea = r => {
+    const programa = nombrePrograma(datos, r.programaId);
+    const falta = nombrePersona(datos, r.titularId);
+    if (r.estado === "cubierto") return `• ${r.inicio} ${programa} — cubre ${nombrePersona(datos, r.relevoId)} (por ${falta})`;
+    if (r.estado === "pendiente") return `• ${r.inicio} ${programa} — ⚠️ se busca relevo (falta ${falta})`;
+    return `• ${r.inicio} ${programa} — ❌ no salió al aire (faltó ${falta})`;
+  };
+
+  const partes = [titulo];
+  let dia = "";
+  for (const r of relevos) {
+    if (r.fecha !== dia) {
+      dia = r.fecha;
+      const corta = fechaCorta(dia);
+      partes.push(`\n*${corta[0].toUpperCase() + corta.slice(1)}*`);
+    }
+    partes.push(linea(r));
+  }
+  const pendientes = relevos.filter(r => r.estado === "pendiente").length;
+  partes.push("");
+  partes.push(pendientes
+    ? `Faltan ${pendientes === 1 ? "1 relevo" : `${pendientes} relevos`} por cubrir. ¿Quién puede ayudar? Respondan aquí. 🙏`
+    : "Todo cubierto esta semana. ¡Gracias, equipo! 🙌");
+  partes.push(firma);
+  return partes.join("\n");
+}
+
 /** Mensaje para el grupo del equipo: "se busca relevo". */
 function mensajeAvisarEquipo(r) {
   const frase = fraseRelevo(r); // termina en "a. m." o "p. m.": no se le agrega otro punto

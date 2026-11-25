@@ -108,6 +108,7 @@ function abrirFormulario({ relevo = null, valores = {}, estado = null } = {}) {
   Formulario.editandoId = relevo ? relevo.id : null;
   $("resumen-errores").hidden = true;
   mostrarSugerencias(false);
+  mostrarDictado(!relevo); // dictar por voz: solo en relevos nuevos
 
   const actual = relevo || {};
   llenarProgramas(actual.programaId);
