@@ -24,6 +24,7 @@ function prepararAusencia() {
 
 /** Abre el diálogo. Opcional: con una persona ya elegida (desde su ficha). */
 function abrirAusencia(personaId = "") {
+  if (!estadoConfiguracion(datos).puedeRegistrar) return avisarQueFaltaConfigurar();
   const titulares = new Set(datos.programas.filter(programaActivo).map(p => p.titularId));
   const select = document.getElementById("a-persona");
   const opciones = datos.presentadores

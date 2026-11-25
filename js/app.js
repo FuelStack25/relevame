@@ -38,13 +38,36 @@ function mostrarVista({ enfocar = false } = {}) {
   VISTAS[activa]();
   if (enfocar) {
     window.scrollTo(0, 0);
-    // Al cambiar de pantalla, el foco va al título (útil con teclado y lector de pantalla)
+    // Si se llegó con irA(), el foco va al elemento pedido; si no, al título
+    // de la pantalla (útil con teclado y lector de pantalla)
+    const destino = enfocarAlMostrar && document.getElementById(enfocarAlMostrar);
+    enfocarAlMostrar = null;
+    if (destino) {
+      destino.scrollIntoView({ block: "center" });
+      destino.focus({ preventScroll: true });
+      return;
+    }
     const titulo = document.getElementById(`titulo-${activa}`);
     if (titulo) {
       titulo.setAttribute("tabindex", "-1");
       titulo.focus({ preventScroll: true });
     }
   }
+}
+
+let enfocarAlMostrar = null; // id del elemento a enfocar al llegar con irA()
+
+/** Va a una pantalla y deja el foco en un elemento concreto de ella. */
+function irA(vista, idEnfocar = null) {
+  enfocarAlMostrar = idEnfocar;
+  if (location.hash === "#" + vista) mostrarVista({ enfocar: true });
+  else location.hash = "#" + vista; // el cambio de dirección vuelve a pintar
+}
+
+/** Si aún no hay equipo o programas, no tiene sentido abrir un formulario vacío. */
+function avisarQueFaltaConfigurar() {
+  avisar("Antes de registrar relevos, agrega al equipo y los programas.", { tipo: "error", duracion: 6000 });
+  irA("hoy", "titulo-primeros-pasos");
 }
 
 /** Cabecera: indicador AL AIRE y aviso de datos de ejemplo. */
@@ -204,6 +227,10 @@ function prepararClicsGenerales() {
       else if (que === "empezar-de-cero") empezarDeCero();
       else if (que === "guia") abrirGuia();
       else if (que === "instalar") instalarApp();
+      // Primeros pasos (pantalla Hoy)
+      else if (que === "ir-presentadores") irA("ajustes", "pegar-personas");
+      else if (que === "nuevo-programa") abrirPrograma();
+      else if (que === "cargar-ejemplo") cargarEjemplo();
       return;
     }
     const editar = evento.target.closest("[data-editar]");

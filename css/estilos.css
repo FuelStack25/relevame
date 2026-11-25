@@ -351,6 +351,29 @@ kbd {
 .rejilla-hoy .tarjeta--semana { order: 3; }
 .rejilla-hoy .tarjeta--proximos { order: 4; }
 
+/* Primeros pasos (bitácora vacía) */
+.primeros-pasos { margin-bottom: var(--e4); border-left: 3px solid var(--acento); }
+.pasos { display: flex; flex-direction: column; gap: var(--e2); }
+.paso {
+  display: grid; grid-template-columns: 32px 1fr; gap: var(--e3); align-items: start;
+  padding: var(--e3); border: 1px solid var(--borde); border-radius: var(--radio-chico); background: var(--superficie-2);
+}
+.paso__marca {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--borde-fuerte); border-radius: 50%;
+  font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--texto-suave);
+}
+.paso__marca .icono { width: 16px; height: 16px; }
+.paso__titulo { font-weight: 600; }
+.paso__texto { font-size: 14px; color: var(--texto-suave); }
+.paso__accion { margin-top: var(--e3); }
+.paso--hecho .paso__marca { background: var(--cub-bg); border-color: var(--cub-borde); color: var(--cub-tx); }
+.paso--hecho .paso__titulo { color: var(--texto-suave); }
+.paso--actual { border-color: var(--acento); }
+.paso--actual .paso__marca { background: var(--acento); border-color: var(--acento); color: var(--sobre-acento); }
+.paso--pendiente { opacity: 0.6; }
+.primeros-pasos__pie { display: flex; flex-wrap: wrap; align-items: center; gap: var(--e1) var(--e2); margin-top: var(--e3); font-size: 14px; color: var(--texto-suave); }
+
 /* Tarjeta "Al aire ahora": como la luz de estudio */
 .tarjeta--aire { border-left: 3px solid var(--aire); }
 .tarjeta--aire .sobretitulo { color: var(--aire-texto); }
@@ -877,6 +900,13 @@ section.tarjeta { scroll-margin-top: 80px; }
 .lista-admin__texto > span { font-size: 14px; color: var(--texto-suave); }
 .lista-admin__acciones { display: flex; gap: var(--e1); flex-wrap: wrap; }
 .es-inactivo .lista-admin__texto strong, .es-inactivo .lista-admin__texto .persona { color: var(--texto-suave); text-decoration: line-through; }
+
+/* Pegar una lista de presentadores */
+.pegar { margin-bottom: var(--e3); }
+.pegar > summary { display: inline-flex; align-items: center; min-height: 40px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--acento-texto); }
+.pegar__form { display: flex; flex-direction: column; align-items: flex-start; gap: var(--e3); margin-top: var(--e2); }
+.pegar__form .campo { width: 100%; }
+.pegar__form strong { color: var(--texto); }
 
 .acciones-datos { display: flex; flex-direction: column; margin-top: var(--e3); }
 .accion-dato {

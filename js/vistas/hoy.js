@@ -45,13 +45,15 @@ function pintarHoy() {
   // Próximos relevos (de hoy en adelante)
   const proximos = relevosOrdenados(datos.relevos.filter(r => r.fecha >= hoy)).reverse().slice(0, 5);
 
+  const config = estadoConfiguracion(datos);
+
   vista.innerHTML = `
     <div class="vista__encabezado">
       <div>
         <p class="sobretitulo">${esc(fechaLarga(hoy))}</p>
         <h1 id="titulo-hoy">Hoy en Onda Viva</h1>
       </div>
-      <div class="vista__acciones vista__acciones--grandes">
+      <div class="vista__acciones vista__acciones--grandes" ${config.puedeRegistrar ? "" : "hidden"}>
         <button class="boton boton--borde boton--grande" type="button" data-accion="nueva-ausencia" title="Atajo: A">
           ${icono("i-ausencia")} Registrar ausencia
         </button>
@@ -60,6 +62,8 @@ function pintarHoy() {
         </button>
       </div>
     </div>
+
+    ${htmlPrimerosPasos(config)}
 
     <div class="rejilla-hoy">
       <div class="columna columna--izq">
@@ -108,6 +112,68 @@ function pintarHoy() {
       </div>
     </div>
   `;
+}
+
+/**
+ * "Primeros pasos": aparece cuando la bitácora está vacía (por ejemplo, después
+ * de "Empezar de cero"). Guía en 3 pasos y solo muestra el botón del paso actual.
+ */
+function htmlPrimerosPasos(config) {
+  if (config.puedeRegistrar && config.relevos > 0) return "";
+
+  const pasos = [
+    {
+      hecho: config.presentadores >= 2,
+      titulo: "Agrega al equipo",
+      texto: config.presentadores >= 2
+        ? `${config.presentadores} presentadores activos.`
+        : "Al menos 2 presentadores. Puedes pegar la lista completa de una vez.",
+      boton: `<button class="boton boton--principal" type="button" data-accion="ir-presentadores">${icono("i-personas")} Agregar presentadores</button>`,
+    },
+    {
+      hecho: config.programas >= 1,
+      titulo: "Agrega los programas",
+      texto: config.programas >= 1
+        ? `${config.programas === 1 ? "1 programa" : config.programas + " programas"} en la parrilla.`
+        : "Nombre, días, horario y quién lo presenta.",
+      boton: `<button class="boton boton--principal" type="button" data-accion="nuevo-programa">${icono("i-parrilla")} Agregar programa</button>`,
+    },
+    {
+      hecho: config.relevos > 0,
+      titulo: "Registra el primer relevo",
+      texto: "Cuando alguien no pueda salir al aire, anótalo y elige quién lo cubre.",
+      boton: `<button class="boton boton--principal" type="button" data-accion="nuevo-relevo">${icono("i-mas")} Registrar relevo</button>`,
+    },
+  ];
+  const actual = pasos.findIndex(p => !p.hecho);
+
+  return `
+    <section class="tarjeta primeros-pasos" aria-labelledby="titulo-primeros-pasos">
+      <div class="tarjeta__cabecera">
+        <h2 class="tarjeta__titulo" id="titulo-primeros-pasos" tabindex="-1">Primeros pasos</h2>
+        <span class="tarjeta__sub">Paso ${actual + 1} de ${pasos.length}</span>
+      </div>
+      <ol class="pasos">
+        ${pasos.map((p, i) => {
+          const estado = p.hecho ? "hecho" : i === actual ? "actual" : "pendiente";
+          const marca = p.hecho ? icono("i-check") : i + 1;
+          const lector = { hecho: "Hecho: ", actual: "Paso actual: ", pendiente: "Después: " }[estado];
+          return `
+          <li class="paso paso--${estado}"${estado === "actual" ? ` aria-current="step"` : ""}>
+            <span class="paso__marca" aria-hidden="true">${marca}</span>
+            <div>
+              <p class="paso__titulo"><span class="solo-lector">${lector}</span>${p.titulo}</p>
+              <p class="paso__texto">${p.texto}</p>
+              ${estado === "actual" ? `<div class="paso__accion">${p.boton}</div>` : ""}
+            </div>
+          </li>`;
+        }).join("")}
+      </ol>
+      ${config.presentadores === 0 && config.programas === 0 ? `
+        <p class="primeros-pasos__pie">¿Solo quieres probar cómo funciona?
+          <button class="boton boton--texto boton--chico" type="button" data-accion="cargar-ejemplo">Cargar datos de ejemplo</button>
+        </p>` : ""}
+    </section>`;
 }
 
 /** Pendiente que aún no empieza: un toque abre el formulario con las sugerencias. */

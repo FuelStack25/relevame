@@ -7,7 +7,7 @@
    VERSION para que los usuarios reciban la versión nueva.
    ========================================================== */
 
-const VERSION = "relevame-v1";
+const VERSION = "relevame-v2";
 
 const ARCHIVOS = [
   "./",

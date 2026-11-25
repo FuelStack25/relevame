@@ -47,6 +47,22 @@ function programaActivo(programa) {
   return programa.activo !== false;
 }
 
+/**
+ * ¿Qué tan lista está la bitácora para usarse?
+ * Para registrar un relevo hacen falta al menos 2 personas activas
+ * (titular y relevo deben ser distintas) y al menos 1 programa al aire.
+ */
+function estadoConfiguracion(datos) {
+  const presentadores = datos.presentadores.filter(p => p.activo).length;
+  const programas = datos.programas.filter(programaActivo).length;
+  return {
+    presentadores,
+    programas,
+    relevos: datos.relevos.length,
+    puedeRegistrar: presentadores >= 2 && programas >= 1,
+  };
+}
+
 /** Programas que salen al aire en una fecha, ordenados por hora. */
 function programasDelDia(datos, fechaISO) {
   const dia = diaSemana(fechaISO);

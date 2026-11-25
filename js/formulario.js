@@ -51,6 +51,14 @@ function prepararFormulario() {
   form.addEventListener("change", evento => {
     if (evento.target.name) Formulario.tocados.add(nombreError(evento.target.name));
     actualizarDependientes();
+    // Si se elige a alguien que no puede cubrir (ya tiene 3 esa semana o un
+    // choque de horario), se sugiere al instante quién sí puede
+    const noPuede = evento.target.id === "f-relevo" && $("f-relevo").value &&
+      validarRelevo(datos, leerFormulario(), Formulario.editandoId).relevoId;
+    if (noPuede) {
+      mostrarSugerencias(true);
+      subirEnPanel($("campo-relevo"));
+    }
     revisarFormulario();
   });
 
@@ -92,6 +100,7 @@ function prepararFormulario() {
  * es lo que la coordinadora viene a hacer.
  */
 function abrirFormulario({ relevo = null, valores = {}, estado = null } = {}) {
+  if (!relevo && !estadoConfiguracion(datos).puedeRegistrar) return avisarQueFaltaConfigurar();
   const form = $("form-relevo");
   form.reset();
   Formulario.tocados.clear();
@@ -132,8 +141,7 @@ function abrirFormulario({ relevo = null, valores = {}, estado = null } = {}) {
   revisarFormulario();
   const dialogo = $("dialogo-relevo");
   if (!dialogo.open) dialogo.showModal(); // puede estar abierto si se salta a un relevo repetido
-  const cuerpo = dialogo.querySelector(".panel__cuerpo");
-  cuerpo.scrollTop = 0;
+  dialogo.querySelector(".panel__cuerpo").scrollTop = 0;
 
   // ¿Falta quién cubra? → directo a las sugerencias
   const estadoFinal = estadoElegido();
@@ -141,15 +149,23 @@ function abrirFormulario({ relevo = null, valores = {}, estado = null } = {}) {
     (estadoFinal === "pendiente" || (estadoFinal === "cubierto" && !$("f-relevo").value));
   if (buscaRelevo) {
     mostrarSugerencias(true);
-    const boton = $("boton-sugerir");
-    // Deja el botón cerca de arriba, con un poco de contexto encima
-    cuerpo.scrollTop += boton.getBoundingClientRect().top - cuerpo.getBoundingClientRect().top - 96;
-    boton.focus({ preventScroll: true });
+    subirEnPanel($("boton-sugerir"), 96); // cerca de arriba, con un poco de contexto encima
+    $("boton-sugerir").focus({ preventScroll: true });
   } else {
     $(relevo || valores.programaId ? "f-titular" : "f-programa").focus();
   }
 
   marcarLimpio($("form-relevo"));
+}
+
+/**
+ * Desplaza el panel para que el elemento quede cerca de arriba (a `margen` px),
+ * dejando ver lo que viene debajo. Solo baja, nunca sube.
+ */
+function subirEnPanel(elemento, margen = 72) {
+  const cuerpo = $("dialogo-relevo").querySelector(".panel__cuerpo");
+  const distancia = elemento.getBoundingClientRect().top - cuerpo.getBoundingClientRect().top - margen;
+  if (distancia > 0) cuerpo.scrollTop += distancia;
 }
 
 /* ---------- Llenar listas ---------- */
@@ -274,7 +290,11 @@ function revisarFormulario() {
     const abrir = repetido
       ? ` <button type="button" class="enlace" data-abrir-relevo="${repetido.id}">Abrir ese relevo</button>`
       : "";
-    parrafo.innerHTML = mostrar ? `${icono("i-alerta")}<span>${esc(errores[clave])}${abrir}</span>` : "";
+    // Si la persona elegida no puede y la lista está abierta, se señala hacia ella
+    const pista = mostrar && clave === "relevoId" && $("f-relevo").value && estanAbiertasSugerencias()
+      ? " Abajo están quienes sí pueden."
+      : "";
+    parrafo.innerHTML = mostrar ? `${icono("i-alerta")}<span>${esc(errores[clave] + pista)}${abrir}</span>` : "";
     input.setAttribute("aria-invalid", mostrar ? "true" : "false");
     const ayuda = input.id + "-ayuda";
     input.setAttribute("aria-describedby", [document.getElementById(ayuda) ? ayuda : "", campo.error].join(" ").trim());

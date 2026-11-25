@@ -32,7 +32,7 @@ function pintarAjustes() {
 
     <!-- ===== Presentadores ===== -->
     <section class="tarjeta" id="sec-presentadores" aria-labelledby="t-presentadores">
-      <h2 class="tarjeta__titulo" id="t-presentadores">Presentadores <span class="tarjeta__sub">${datos.presentadores.filter(p => p.activo).length} activos</span></h2>
+      <h2 class="tarjeta__titulo" id="t-presentadores" tabindex="-1">Presentadores <span class="tarjeta__sub">${datos.presentadores.filter(p => p.activo).length} activos</span></h2>
 
       <form class="form-en-linea" id="form-persona" novalidate>
         <div class="campo">
@@ -47,6 +47,19 @@ function pintarAjustes() {
         </div>
         <button class="boton boton--principal" type="submit">${icono("i-mas")} Agregar</button>
       </form>
+
+      <details class="pegar" ${datos.presentadores.filter(p => p.activo).length < 2 ? "open" : ""}>
+        <summary>Pegar una lista de nombres</summary>
+        <form class="pegar__form" id="form-pegar" novalidate>
+          <div class="campo">
+            <label for="pegar-personas">Un presentador por línea <span class="req">el celular es opcional, después de una coma</span></label>
+            <textarea id="pegar-personas" rows="6" aria-describedby="pegar-resumen"
+              placeholder="Laura Gómez, 300 123 4567&#10;Andrés Pinto&#10;…"></textarea>
+            <p class="ayuda" id="pegar-resumen" aria-live="polite">${resumenPegado()}</p>
+          </div>
+          <button class="boton boton--principal" type="submit" id="pegar-boton" disabled>${icono("i-personas")} Agregar al equipo</button>
+        </form>
+      </details>
 
       ${personas.length ? `
       <ul class="lista-admin">
@@ -215,6 +228,74 @@ function agregarPersona() {
   guardarCambios();
   avisar(`${nombre} se agregó al equipo.`);
   document.getElementById("nueva-persona").focus();
+}
+
+/* ---------- Pegar una lista de presentadores ---------- */
+
+/**
+ * Lee un texto con un presentador por línea. Acepta lo que sale de copiar
+ * en Excel, WhatsApp o una lista numerada:
+ *   "1. Laura Gómez"   "Andrés Pinto, 300 123 4567"   "Ana Ruiz<TAB>3001234567"
+ * Devuelve { nuevos: [{ nombre, telefono }], repetidos: [nombre] }.
+ */
+function leerListaPersonas(texto) {
+  const yaEstan = new Set(datos.presentadores.map(p => p.nombre.toLowerCase()));
+  const nuevos = [];
+  const repetidos = [];
+
+  for (const linea of texto.split(/\r?\n/)) {
+    const limpia = linea.replace(/^\s*(\d+[.)-]|[-•*])\s+/, "").trim(); // quita "1." o "-" del inicio
+    if (!limpia) continue;
+
+    // Si el último trozo (tras coma, punto y coma o tabulación) es un número válido, es el celular
+    const partes = limpia.split(/[\t;,]/).map(s => s.trim()).filter(Boolean);
+    let telefono = "";
+    if (partes.length > 1 && !validarTelefono(partes[partes.length - 1])) telefono = partes.pop();
+    const nombre = partes.join(" ").replace(/\s+/g, " ").slice(0, 50);
+
+    if (yaEstan.has(nombre.toLowerCase())) { repetidos.push(nombre); continue; }
+    yaEstan.add(nombre.toLowerCase()); // también evita repetidos dentro de la misma lista
+    nuevos.push({ nombre, telefono });
+  }
+  return { nuevos, repetidos };
+}
+
+/** Texto de vista previa: qué se va a agregar antes de tocar el botón. */
+function resumenPegado(texto = "") {
+  const { nuevos, repetidos } = leerListaPersonas(texto);
+  if (!nuevos.length && !repetidos.length) {
+    return "Puedes copiarla de Excel, de WhatsApp o de una lista numerada.";
+  }
+  const muestra = nuevos.slice(0, 4).map(p => esc(p.nombre)).join(", ") + (nuevos.length > 4 ? ` y ${nuevos.length - 4} más` : "");
+  const conCelular = nuevos.filter(p => p.telefono).length;
+  return [
+    nuevos.length ? `Se agregarán <strong>${nuevos.length}</strong>: ${muestra}.` : "No hay nombres nuevos.",
+    conCelular ? `${conCelular} con celular.` : "",
+    repetidos.length ? `${repetidos.length === 1 ? "1 nombre repetido se omite" : `${repetidos.length} nombres repetidos se omiten`}.` : "",
+  ].filter(Boolean).join(" ");
+}
+
+function pintarResumenPegado() {
+  const texto = document.getElementById("pegar-personas").value;
+  const cuantos = leerListaPersonas(texto).nuevos.length;
+  document.getElementById("pegar-resumen").innerHTML = resumenPegado(texto);
+  const boton = document.getElementById("pegar-boton");
+  boton.disabled = cuantos === 0;
+  boton.innerHTML = `${icono("i-personas")} ${cuantos ? `Agregar ${cuantos} al equipo` : "Agregar al equipo"}`;
+}
+
+function agregarListaPersonas() {
+  const { nuevos } = leerListaPersonas(document.getElementById("pegar-personas").value);
+  if (!nuevos.length) return;
+  for (const p of nuevos) datos.presentadores.push({ id: nuevoId(), nombre: p.nombre, telefono: p.telefono, activo: true });
+  guardarCambios();
+  // Si aún no hay programas, el aviso ofrece el siguiente paso
+  const faltanProgramas = estadoConfiguracion(datos).programas === 0;
+  avisar(`Se ${nuevos.length === 1 ? "agregó 1 presentador" : `agregaron ${nuevos.length} presentadores`} al equipo.`, {
+    duracion: 8000,
+    accion: faltanProgramas ? { texto: "Agregar programa", icono: "i-mas", alHacer: () => abrirPrograma() } : null,
+  });
+  document.getElementById("t-presentadores").focus();
 }
 
 function guardarNombrePersona(id) {
@@ -423,8 +504,8 @@ async function empezarDeCero() {
   if (!ok) return;
   datos = Almacen.vacio();
   guardarCambios();
-  location.hash = "#ajustes";
-  avisar("Listo. Empieza agregando a los presentadores.");
+  irA("hoy", "titulo-primeros-pasos");
+  avisar("Listo. Sigue los primeros pasos para cargar tu equipo.");
 }
 
 /* ---------- Eventos ---------- */
@@ -436,8 +517,13 @@ function prepararAjustes() {
   vista.addEventListener("submit", evento => {
     evento.preventDefault();
     if (evento.target.id === "form-persona") agregarPersona();
+    if (evento.target.id === "form-pegar") agregarListaPersonas();
     const editar = evento.target.closest("[data-editar-persona]");
     if (editar) guardarNombrePersona(editar.dataset.editarPersona);
+  });
+
+  vista.addEventListener("input", evento => {
+    if (evento.target.id === "pegar-personas") pintarResumenPegado();
   });
 
   vista.addEventListener("change", evento => {
