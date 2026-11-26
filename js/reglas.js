@@ -411,6 +411,29 @@ function resumenDelMes(datos, mes) {
   };
 }
 
+/**
+ * Semanas (lunes a domingo) que tocan un mes, con sus relevos de ESE mes:
+ * [{ lunes, cubierto, pendiente, "sin-cubrir", total }]
+ * La usan la gráfica de Reportes, el PDF y el Excel.
+ */
+function semanasDelMes(datos, mes) {
+  const [anio, numMes] = mes.split("-").map(Number);
+  const ultimoDia = aISO(new Date(anio, numMes, 0));
+  const semanas = [];
+  for (let lunes = lunesDe(`${mes}-01`); lunes <= ultimoDia; lunes = sumarDias(lunes, 7)) {
+    const domingo = sumarDias(lunes, 6);
+    const relevos = datos.relevos.filter(r => r.fecha.startsWith(mes) && r.fecha >= lunes && r.fecha <= domingo);
+    semanas.push({
+      lunes,
+      cubierto: relevos.filter(r => r.estado === "cubierto").length,
+      pendiente: relevos.filter(r => r.estado === "pendiente").length,
+      "sin-cubrir": relevos.filter(r => r.estado === "sin-cubrir").length,
+      total: relevos.length,
+    });
+  }
+  return semanas;
+}
+
 /* ---------- ¿Qué está al aire ahora? ---------- */
 
 /**

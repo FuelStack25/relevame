@@ -2,7 +2,7 @@
    vistas/bitacora.js — Lista de todos los relevos
    ----------------------------------------------------------
    Requisito 04: del más reciente al más antiguo.
-   Nivel 2: buscar y filtrar; exportar a CSV.
+   Nivel 2: buscar y filtrar; exportar a Excel.
    Nivel 3: marca los choques de horario.
    ========================================================== */
 
@@ -33,7 +33,7 @@ function pintarBitacora() {
         <h1 id="titulo-bitacora">Bitácora</h1>
       </div>
       <div class="vista__acciones">
-        <button class="boton boton--borde" type="button" id="boton-csv">${icono("i-descargar")} Exportar a CSV</button>
+        <button class="boton boton--borde" type="button" id="boton-excel">${icono("i-descargar")} Exportar a Excel</button>
         <button class="boton boton--borde" type="button" data-accion="nueva-ausencia" title="Atajo: A">${icono("i-ausencia")} Registrar ausencia</button>
         <button class="boton boton--principal" type="button" data-accion="nuevo-relevo" title="Atajo: N">${icono("i-mas")} Registrar relevo</button>
       </div>
@@ -140,7 +140,7 @@ function pintarResultadosBitacora() {
   if (!caja) return;
   const base = relevosFiltrados({ conEstado: false });
   const lista = Filtros.estado ? base.filter(r => r.estado === Filtros.estado) : base;
-  document.getElementById("boton-csv").disabled = lista.length === 0;
+  document.getElementById("boton-excel").disabled = lista.length === 0;
 
   const contador = document.getElementById("filtros-contador");
   contador.hidden = cuantosFiltros() === 0;
@@ -221,29 +221,22 @@ function filaRelevo(r) {
     </tr>`;
 }
 
-/* ---------- Exportar a CSV (Excel / Google Sheets) ---------- */
+/* ---------- Exportar a Excel (.xlsx, ver xlsx.js e informe.js) ---------- */
 
-function exportarCSV() {
+/** Descarga en Excel los relevos que se ven ahora (respeta los filtros). */
+function exportarExcel() {
   const lista = relevosFiltrados();
-  // Excel en español usa ";" como separador. El BOM (﻿) hace que lea bien las tildes.
-  const celda = valor => `"${String(valor ?? "").replace(/"/g, '""')}"`;
-  const encabezado = ["Fecha", "Día", "Programa", "Inicio", "Fin", "Horas", "Titular", "Relevo", "Motivo", "Estado", "Observaciones"];
-  const filas = lista.map(r => [
-    r.fecha,
-    DIAS_LARGOS[diaSemana(r.fecha)],
-    nombrePrograma(datos, r.programaId),
-    r.inicio,
-    r.fin,
-    String(duracionHoras(r.inicio, r.fin)).replace(".", ","),
-    nombrePersona(datos, r.titularId),
-    r.relevoId ? nombrePersona(datos, r.relevoId) : "",
-    r.motivo,
-    ESTADOS[r.estado].texto,
-    r.observaciones,
-  ]);
-  const csv = "﻿" + [encabezado, ...filas].map(f => f.map(celda).join(";")).join("\r\n");
-  descargarArchivo(`relevos-onda-viva-${hoyISO()}.csv`, csv, "text/csv;charset=utf-8");
-  avisar(`Se descargó el archivo con ${lista.length} relevos.`);
+  const hoja = {
+    nombre: "Relevos",
+    encabezado: [
+      "Bitácora de relevos · Onda Viva",
+      `${lista.length} ${lista.length === 1 ? "relevo" : "relevos"}${hayFiltros() ? " (con los filtros aplicados)" : ""} · exportado el ${fechaLarga(hoyISO())}`,
+    ],
+    columnas: COLUMNAS_RELEVOS,
+    filas: filasRelevosExcel(lista),
+  };
+  descargarArchivo(`bitacora-relevos-${hoyISO()}.xlsx`, crearXLSX([hoja], "Bitácora de relevos"), TIPO_XLSX);
+  avisar(`Se descargó el Excel con ${lista.length} relevos.`);
 }
 
 /* ---------- Eventos ---------- */
@@ -260,7 +253,7 @@ function prepararBitacora() {
   });
 
   vista.addEventListener("click", async evento => {
-    if (evento.target.closest("#boton-csv")) return exportarCSV();
+    if (evento.target.closest("#boton-excel")) return exportarExcel();
 
     const chip = evento.target.closest("[data-filtro-estado]");
     if (chip) {

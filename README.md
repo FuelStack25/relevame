@@ -1,7 +1,7 @@
 # Relévame · Bitácora de relevos de Onda Viva
 
 Sitio web para registrar, consultar y contar los relevos de presentadores de la emisora Onda Viva.
-Hecho solo con **HTML, CSS y JavaScript**, sin librerías.
+Hecho con **HTML, CSS y JavaScript**. La única librería es **jsPDF** (para el reporte en PDF); todo lo demás está hecho a mano.
 
 ## Cómo abrirlo
 Doble clic en `index.html`. No necesita servidor: se usan `<script>` normales (no módulos)
@@ -28,6 +28,9 @@ js/guia.js               Guía de primer uso y atajos
 js/resolver.js           Proponer quién cubre todos los pendientes de una vez
 js/cabina.js             Modo Cabina: pantalla del estudio
 js/voz.js                Dictar un relevo por voz (entiende quién falta, programa, día y quién cubre)
+js/xlsx.js               Crea archivos de Excel (.xlsx) sin librerías: XML + ZIP hechos a mano
+js/informe.js            Reporte mensual en PDF (con jsPDF) y en Excel, con los mismos datos
+lib/                     jsPDF 2.5.1 y jsPDF-AutoTable 3.8.4 (licencia MIT), copiadas para que funcione sin internet
 js/vistas/*.js           Una pantalla por archivo: hoy, parrilla, bitácora, reportes, ajustes
 js/app.js                Arranque, navegación, tema, atajos y app instalable
 ```
@@ -43,13 +46,20 @@ js/app.js                Arranque, navegación, tema, atajos y app instalable
 | Domingos | Onda Viva no transmite; no se permiten relevos en domingo |
 | Ausencias repetidas | Si un programa ya tiene relevo ese día, la ausencia no lo duplica |
 
+## Librerías usadas
+| Librería | Para qué | Por qué |
+|---|---|---|
+| [jsPDF](https://github.com/parallax/jsPDF) 2.5.1 + [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable) 3.8.4 (MIT) | Crear el reporte mensual en PDF | Un PDF que se descarga igual en cualquier navegador, con tablas que siguen en la página siguiente y "Página X de Y". Se cargan solo al tocar *Descargar PDF*. |
+
+El **Excel** no usa librerías: un `.xlsx` es un ZIP con archivos XML, y `js/xlsx.js` los escribe directamente.
+
 ## Requisitos cubiertos
 - **Nivel 1:** formulario, validaciones, máx. 3 por semana, lista ordenada, sugerencias + confirmar antes de borrar,
   localStorage, contador por presentador, datos de ejemplo + borrar todo, diseño adaptable.
 - **Nivel 2:** filtros (presentador, programa, estado, fechas), resumen del mes, alertas de hoy y mañana,
-  administración de presentadores y programas, exportar CSV.
+  administración de presentadores y programas, exportar a Excel (.xlsx real, con fechas, filtros y varias hojas).
 - **Nivel 3:** choques de horario, copia de seguridad y restauración, saldo de equidad,
-  reporte mensual imprimible/PDF, gráficas (SVG hecho a mano).
+  reporte mensual en PDF (membrete, puntos clave, tablas, páginas numeradas y firmas), gráficas (SVG hecho a mano).
 
 ## Ideas propias
 - **Pedir relevos por WhatsApp** con el mensaje ya escrito (a una persona o al grupo del equipo).

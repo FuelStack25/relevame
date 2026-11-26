@@ -32,7 +32,8 @@ function pintarReportes() {
           <label for="reporte-mes">Mes</label>
           <input id="reporte-mes" type="month" value="${mes}">
         </div>
-        <button class="boton boton--principal" type="button" id="boton-imprimir">Imprimir o guardar PDF</button>
+        <button class="boton boton--borde" type="button" id="boton-excel">${icono("i-descargar")} Descargar Excel</button>
+        <button class="boton boton--principal" type="button" id="boton-pdf">${icono("i-descargar")} Descargar PDF</button>
       </div>
     </div>
 
@@ -168,23 +169,7 @@ function htmlEquidad(filas) {
 /* ---------- Gráfica: relevos por semana (SVG, columnas apiladas) ---------- */
 
 function graficaSemanas(mes) {
-  const primerDia = `${mes}-01`;
-  const [anio, numMes] = mes.split("-").map(Number);
-  const ultimoDia = aISO(new Date(anio, numMes, 0));
-
-  // Semanas (lunes a domingo) que tocan el mes
-  const semanas = [];
-  for (let lunes = lunesDe(primerDia); lunes <= ultimoDia; lunes = sumarDias(lunes, 7)) {
-    const domingo = sumarDias(lunes, 6);
-    const relevos = datos.relevos.filter(r => r.fecha.startsWith(mes) && r.fecha >= lunes && r.fecha <= domingo);
-    semanas.push({
-      lunes,
-      cubierto: relevos.filter(r => r.estado === "cubierto").length,
-      pendiente: relevos.filter(r => r.estado === "pendiente").length,
-      "sin-cubrir": relevos.filter(r => r.estado === "sin-cubrir").length,
-      total: relevos.length,
-    });
-  }
+  const semanas = semanasDelMes(datos, mes); // semanas (lunes a domingo) que tocan el mes
 
   if (semanas.every(s => s.total === 0)) return `<p class="tarjeta__nota">No hay relevos en este mes.</p>`;
 
@@ -383,7 +368,17 @@ function prepararReportes() {
       document.getElementById("reporte-mes").focus();
     }
   });
-  vista.addEventListener("click", evento => {
-    if (evento.target.closest("#boton-imprimir")) window.print();
+  vista.addEventListener("click", async evento => {
+    if (evento.target.closest("#boton-excel")) return descargarExcelMes(Reporte.mes);
+    const pdf = evento.target.closest("#boton-pdf");
+    if (pdf && !pdf.disabled) {
+      // La primera vez se cargan las librerías del PDF: se avisa mientras tanto
+      const texto = pdf.innerHTML;
+      pdf.disabled = true;
+      pdf.textContent = "Preparando PDF…";
+      await descargarPDFMes(Reporte.mes);
+      pdf.disabled = false;
+      pdf.innerHTML = texto;
+    }
   });
 }
