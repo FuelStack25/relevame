@@ -3,9 +3,10 @@
    ----------------------------------------------------------
    «Laura Gómez no viene mañana a Despierta Onda, cita médica.
     La cubre Andrés Pinto.»  →  se llena el formulario solo.
-   Usa el reconocimiento de voz del navegador (Chrome, Edge,
-   Android, Safari). Nunca guarda por su cuenta: la
-   coordinadora revisa y toca Guardar.
+   Se puede escribir o dictar. Si el servidor tiene IA
+   (servidor-ia/), la usa; si no, o si falla, entiende en
+   "modo básico" con entenderDictado(). Nunca guarda por su
+   cuenta: la coordinadora revisa y toca Guardar.
    entenderDictado() no toca la pantalla: recibe el texto y
    devuelve lo que entendió, así se puede probar por separado.
    ========================================================== */
@@ -183,29 +184,101 @@ function entenderDictado(datos, textoDicho, hoy = hoyISO()) {
   };
 }
 
+/* ---------- IA (a través del intermediario del servidor) ---------- */
+
+// null = aún no se sabe · true / false = el servidor dijo si tiene la IA activa
+const IA = { activa: null };
+
+/** Pregunta al servidor si la IA está configurada. Sin servidor (doble clic en index.html) queda en false. */
+async function consultarEstadoIA() {
+  if (!location.protocol.startsWith("http")) { IA.activa = false; return; }
+  try {
+    const respuesta = await fetch("api/ia/estado", { signal: AbortSignal.timeout(4000) });
+    IA.activa = respuesta.ok && (await respuesta.json()).activa === true;
+  } catch (e) {
+    IA.activa = false;
+  }
+  pintarAvisoDictado();
+}
+
+/**
+ * Le pide a la IA que entienda el texto. Le manda la lista de programas y del
+ * equipo (con sus ids) para que responda con datos que la app conoce.
+ * El servidor revisa la respuesta; aquí se vuelve a revisar al llenar el formulario.
+ */
+async function entenderConIA(texto) {
+  const hoy = hoyISO();
+  const respuesta = await fetch("api/ia/entender", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(15000),
+    body: JSON.stringify({
+      texto,
+      hoy,
+      diaSemana: DIAS_LARGOS[diaSemana(hoy)],
+      programas: datos.programas.filter(programaActivo).map(p => ({
+        id: p.id, nombre: p.nombre, dias: textoDias(p.dias), inicio: p.inicio, fin: p.fin,
+        titular: nombrePersona(datos, p.titularId),
+      })),
+      personas: datos.presentadores.filter(p => p.activo).map(p => ({ id: p.id, nombre: p.nombre })),
+    }),
+  });
+  const json = await respuesta.json().catch(() => ({}));
+  if (!respuesta.ok) throw new Error(json.error || `Error ${respuesta.status}`);
+  return {
+    programaId: json.programaId || "",
+    fecha: json.fecha || hoy,
+    fechaDicha: Boolean(json.fecha),
+    titularId: json.titularId || "",
+    relevoId: json.relevoId || "",
+    motivo: json.motivo || "",
+    estado: json.estado || "pendiente",
+    dudas: json.dudas || "",
+  };
+}
+
 /* ---------- Micrófono y formulario ---------- */
 
 function prepararVoz() {
-  if (!vozDisponible()) return;
-  document.getElementById("boton-dictar").addEventListener("click", () => {
-    if (Voz.escuchando) Voz.reconocedor?.stop();
-    else empezarDictado();
+  const texto = document.getElementById("dictado-texto");
+  document.getElementById("boton-entender").addEventListener("click", () => entenderTexto(texto.value));
+  // Ctrl + Enter (o Cmd + Enter) en el cuadro también llena el formulario
+  texto.addEventListener("keydown", evento => {
+    if (evento.key === "Enter" && (evento.ctrlKey || evento.metaKey)) { evento.preventDefault(); entenderTexto(texto.value); }
   });
-  document.getElementById("dialogo-relevo").addEventListener("close", () => Voz.reconocedor?.abort());
+  if (vozDisponible()) {
+    document.getElementById("boton-dictar").addEventListener("click", () => {
+      if (Voz.escuchando) Voz.reconocedor?.stop();
+      else empezarDictado();
+    });
+    document.getElementById("dialogo-relevo").addEventListener("close", () => Voz.reconocedor?.abort());
+  }
+  consultarEstadoIA();
 }
 
-/** Muestra el botón de dictar solo en relevos nuevos y si el navegador lo permite. */
+/** Muestra el cuadro solo en relevos nuevos. El micrófono, solo si el navegador lo permite. */
 function mostrarDictado(visible) {
-  document.getElementById("dictado").hidden = !(visible && vozDisponible());
+  document.getElementById("dictado").hidden = !visible;
+  document.getElementById("boton-dictar").hidden = !vozDisponible();
   document.getElementById("dictado-resultado").hidden = true;
   pintarBotonDictar(false);
+  pintarAvisoDictado();
+}
+
+/** Aviso bajo el cuadro: si se usa IA (y a dónde va el texto) o el modo básico. */
+function pintarAvisoDictado() {
+  const aviso = document.getElementById("dictado-aviso");
+  if (!aviso) return;
+  aviso.textContent = IA.activa
+    ? "Se entiende con IA (Google Gemini): el texto y los nombres del equipo se envían a ese servicio. Siempre puedes revisar antes de guardar."
+    : "Modo básico: entiende frases como «Laura Gómez no viene mañana a Despierta Onda, la cubre Andrés Pinto».";
 }
 
 function pintarBotonDictar(escuchando) {
   const boton = document.getElementById("boton-dictar");
   boton.classList.toggle("boton--escuchando", escuchando);
   boton.setAttribute("aria-pressed", String(escuchando));
-  boton.querySelector("span").textContent = escuchando ? "Escuchando… toca para terminar" : "Dictar el relevo";
+  boton.querySelector("span").textContent = escuchando ? "Escuchando… toca para terminar" : "Dictar";
 }
 
 function mostrarResultadoDictado(html) {
@@ -220,11 +293,12 @@ function empezarDictado() {
   reconocedor.lang = "es-CO";
   reconocedor.interimResults = true;
   reconocedor.continuous = false;
+  const cuadro = document.getElementById("dictado-texto");
   let dicho = "";
 
   reconocedor.onresult = evento => {
     dicho = [...evento.results].map(r => r[0].transcript).join(" ");
-    mostrarResultadoDictado(`<p class="dictado__oido">«${esc(dicho)}»</p>`);
+    cuadro.value = dicho; // se ve lo que se va entendiendo
   };
   reconocedor.onerror = evento => {
     const mensajes = {
@@ -235,13 +309,13 @@ function empezarDictado() {
       "network": "El dictado necesita conexión a internet.",
     };
     if (evento.error !== "aborted") {
-      mostrarResultadoDictado(`<p class="error">${icono("i-alerta")}<span>${mensajes[evento.error] || "No se pudo usar el dictado. Llena el formulario a mano."}</span></p>`);
+      mostrarResultadoDictado(`<p class="error">${icono("i-alerta")}<span>${mensajes[evento.error] || "No se pudo usar el dictado. Escríbelo en el cuadro."}</span></p>`);
     }
   };
   reconocedor.onend = () => {
     Voz.escuchando = false;
     pintarBotonDictar(false);
-    if (dicho.trim()) aplicarDictado(dicho);
+    if (dicho.trim()) entenderTexto(dicho);
   };
 
   Voz.reconocedor = reconocedor;
@@ -251,10 +325,37 @@ function empezarDictado() {
   try { reconocedor.start(); } catch (e) { Voz.escuchando = false; pintarBotonDictar(false); }
 }
 
-/** Llena el formulario con lo entendido y muestra qué se llenó y qué falta. */
-function aplicarDictado(dicho) {
-  const r = entenderDictado(datos, dicho);
+/** Entiende el texto (con IA si se puede; si no, en modo básico) y llena el formulario. */
+async function entenderTexto(texto) {
+  const dicho = String(texto || "").trim();
+  if (!dicho) {
+    mostrarResultadoDictado(`<p class="ayuda">Escribe o dicta primero qué pasó.</p>`);
+    document.getElementById("dictado-texto").focus();
+    return;
+  }
+  const boton = document.getElementById("boton-entender");
+  let resultado = null;
+  let origen = "basico";
+  let fallaIA = "";
 
+  if (IA.activa) {
+    boton.disabled = true;
+    mostrarResultadoDictado(`<p class="ayuda">Entendiendo con IA…</p>`);
+    try {
+      resultado = await entenderConIA(dicho);
+      origen = "ia";
+    } catch (e) {
+      fallaIA = e.name === "TimeoutError" ? "La IA tardó demasiado" : e.message;
+    }
+    boton.disabled = false;
+  }
+  if (!document.getElementById("dialogo-relevo").open) return; // se cerró mientras tanto
+  if (!resultado) resultado = entenderDictado(datos, dicho);
+  aplicarDictado(dicho, resultado, origen, fallaIA);
+}
+
+/** Llena el formulario con lo entendido y muestra qué se llenó y qué falta. */
+function aplicarDictado(dicho, r, origen, fallaIA = "") {
   if (r.programaId) { $("f-programa").value = r.programaId; alCambiarPrograma(); }
   $("f-fecha").value = r.fecha;
   if (r.titularId) $("f-titular").value = r.titularId;
@@ -272,8 +373,11 @@ function aplicarDictado(dicho) {
   const programa = buscarPrograma(datos, r.programaId);
   const fila = (ok, etiqueta, valor) =>
     `<li class="${ok ? "dictado__ok" : "dictado__falta"}">${icono(ok ? "i-check" : "i-alerta")}<span><strong>${etiqueta}:</strong> ${valor}</span></li>`;
+  const cabecera = origen === "ia"
+    ? `<p class="dictado__origen">${icono("i-chispa")} Entendido con IA</p>`
+    : `<p class="dictado__origen">Entendido en modo básico${fallaIA ? `<span class="dictado__motivo">· ${esc(fallaIA.replace(/\.$/, ""))}</span>` : ""}</p>`;
   mostrarResultadoDictado(`
-    <p class="dictado__oido">«${esc(dicho)}»</p>
+    ${cabecera}
     <ul class="dictado__lista">
       ${fila(Boolean(programa), "Programa", programa ? esc(programa.nombre) : "no lo entendí, elígelo abajo")}
       ${fila(true, "Fecha", esc(fechaCorta(r.fecha)) + (r.fechaDicha ? "" : " (no la dijiste: puse hoy)"))}
@@ -281,5 +385,6 @@ function aplicarDictado(dicho) {
       ${r.relevoId ? fila(true, "Cubre", esc(nombrePersona(datos, r.relevoId))) : ""}
       ${r.motivo ? fila(true, "Motivo", esc(r.motivo)) : ""}
     </ul>
+    ${r.dudas ? `<p class="dictado__duda">${icono("i-alerta")}<span>${esc(r.dudas)}</span></p>` : ""}
     <p class="ayuda">Revisa los datos y toca <strong>Guardar relevo</strong>.</p>`);
 }

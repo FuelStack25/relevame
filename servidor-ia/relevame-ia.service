@@ -1,0 +1,25 @@
+# Servicio del intermediario de IA de Relévame (systemd)
+# Se instala en /etc/systemd/system/relevame-ia.service
+[Unit]
+Description=Relévame · intermediario de IA
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/node /opt/relevame-ia/servidor.js
+# La clave vive solo aquí (el guion "-" permite arrancar aunque el archivo aún no exista: la IA queda desactivada)
+EnvironmentFile=-/etc/relevame-ia.env
+Restart=on-failure
+RestartSec=5
+
+# Aislamiento: usuario temporal sin privilegios y sin acceso al resto del sistema
+DynamicUser=yes
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+MemoryMax=128M
+
+[Install]
+WantedBy=multi-user.target

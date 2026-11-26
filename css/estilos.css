@@ -621,6 +621,14 @@ select option { background: var(--superficie); color: var(--texto); }
 .dictado__lista { display: flex; flex-direction: column; gap: 4px; }
 .dictado__lista li { display: flex; align-items: flex-start; gap: 6px; }
 .dictado__lista .icono { width: 16px; height: 16px; margin-top: 2px; }
+.dictado__titulo { font-size: 14px; font-weight: 600; }
+.dictado__acciones { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.dictado__acciones .boton { flex: 1 1 auto; }
+.dictado__origen { display: flex; flex-wrap: wrap; align-items: center; gap: 0 6px; font-size: 13px; font-weight: 600; color: var(--acento-texto); }
+.dictado__motivo { font-weight: 400; color: var(--texto-suave); }
+.dictado__origen .icono { width: 15px; height: 15px; }
+.dictado__duda { display: flex; align-items: flex-start; gap: 6px; color: var(--pend-tx); }
+.dictado__duda .icono { width: 16px; height: 16px; margin-top: 2px; flex: none; }
 .dictado__ok .icono { color: var(--cub-tx); }
 .dictado__falta { color: var(--pend-tx); }
 

@@ -135,12 +135,21 @@
       <div class="panel__cuerpo">
         <div class="resumen-errores" id="resumen-errores" role="alert" tabindex="-1" hidden></div>
 
-        <!-- Dictar por voz (solo relevos nuevos y si el navegador lo permite) -->
+        <!-- Contarlo con sus palabras, escrito o dictado (solo relevos nuevos).
+             Con IA si el servidor la tiene; si no, el entendimiento básico de voz.js -->
         <div class="dictado" id="dictado" hidden>
-          <button class="boton boton--borde boton--ancho" type="button" id="boton-dictar" aria-pressed="false" aria-describedby="dictado-ejemplo">
-            <svg class="icono" aria-hidden="true"><use href="#i-mic"/></svg> <span>Dictar el relevo</span>
-          </button>
-          <p class="ayuda" id="dictado-ejemplo">Ej.: «Laura Gómez no viene mañana a Despierta Onda, cita médica. La cubre Andrés Pinto».</p>
+          <label class="dictado__titulo" for="dictado-texto">Cuéntalo con tus palabras <span class="req">opcional</span></label>
+          <textarea id="dictado-texto" rows="2" maxlength="600" aria-describedby="dictado-aviso"
+            placeholder="Ej.: Laura amaneció con fiebre, no llega mañana a Despierta Onda; la cubre Andrés."></textarea>
+          <div class="dictado__acciones">
+            <button class="boton boton--borde" type="button" id="boton-dictar" aria-pressed="false" hidden>
+              <svg class="icono" aria-hidden="true"><use href="#i-mic"/></svg> <span>Dictar</span>
+            </button>
+            <button class="boton boton--borde" type="button" id="boton-entender">
+              <svg class="icono" aria-hidden="true"><use href="#i-chispa"/></svg> Llenar el formulario
+            </button>
+          </div>
+          <p class="ayuda" id="dictado-aviso"></p>
           <div class="dictado__resultado" id="dictado-resultado" aria-live="polite" hidden></div>
         </div>
 

@@ -31,6 +31,7 @@ js/voz.js                Dictar un relevo por voz (entiende quién falta, progra
 js/xlsx.js               Crea archivos de Excel (.xlsx) sin librerías: XML + ZIP hechos a mano
 js/informe.js            Reporte mensual en PDF (con jsPDF) y en Excel, con los mismos datos
 lib/                     jsPDF 2.5.1 y jsPDF-AutoTable 3.8.4 (licencia MIT), copiadas para que funcione sin internet
+servidor-ia/             Intermediario de IA para el VPS (Node, sin dependencias): guarda la clave y habla con la IA
 js/vistas/*.js           Una pantalla por archivo: hoy, parrilla, bitácora, reportes, ajustes
 js/app.js                Arranque, navegación, tema, atajos y app instalable
 ```
@@ -50,6 +51,7 @@ js/app.js                Arranque, navegación, tema, atajos y app instalable
 | Librería | Para qué | Por qué |
 |---|---|---|
 | [jsPDF](https://github.com/parallax/jsPDF) 2.5.1 + [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable) 3.8.4 (MIT) | Crear el reporte mensual en PDF | Un PDF que se descarga igual en cualquier navegador, con tablas que siguen en la página siguiente y "Página X de Y". Se cargan solo al tocar *Descargar PDF*. |
+| Google Gemini (API, plan gratuito) | Entender lo que la coordinadora escribe o dicta | Entiende frases libres, apodos y errores del dictado. Se usa a través de `servidor-ia/` para no exponer la clave; lo que responde se revisa antes de usarlo. Usamos IA donde hay lenguaje humano y reglas exactas (máximo 3 por semana, choques) donde no se puede fallar. |
 
 El **Excel** no usa librerías: un `.xlsx` es un ZIP con archivos XML, y `js/xlsx.js` los escribe directamente.
 
@@ -78,7 +80,9 @@ El **Excel** no usa librerías: un `.xlsx` es un ZIP con archivos XML, y `js/xls
 - **Modo Cabina** (`C`): pantalla completa para el televisor del estudio con luz AL AIRE, reloj, cuenta regresiva
   y lo que sigue; mantiene la pantalla encendida.
 - **Primeros pasos** al empezar de cero y **pegar la lista** completa de presentadores.
-- **Dictar por voz** (`V`): «Laura Gómez no viene mañana a Despierta Onda, la cubre Andrés Pinto» llena el formulario.
+- **Cuéntalo con tus palabras, con IA** (`V` para dictar): se escribe o se dicta como se habla —«Lau amaneció con fiebre,
+  no llega mañana a lo de las 7; de pronto la cubre Andrés»— y la IA llena el formulario. Si algo es dudoso, lo deja
+  pendiente y lo explica. La clave vive solo en el servidor (`servidor-ia/`); sin IA, la app entiende en modo básico.
 - **Resumen de la semana por WhatsApp** para el grupo del equipo, desde Hoy o la Parrilla.
 - **Mapa de calor** en Reportes: qué días y horas necesitan más relevos y dónde un programa no salió al aire.
 
