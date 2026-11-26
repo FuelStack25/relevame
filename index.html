@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Relévame · Onda Viva</title>
   <meta name="description" content="Registro de relevos de presentadores de Onda Viva.">
-  <meta name="theme-color" content="#0B0D10">
+  <meta name="theme-color" content="#FFFFFF">
   <link rel="icon" href="icons/icono.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/icono-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -14,13 +14,13 @@
   <!-- Aplica el tema guardado ANTES de pintar, para que no parpadee -->
   <script>
     try {
-      if (localStorage.getItem("ondaviva.tema") === "claro") document.documentElement.dataset.tema = "claro";
-    } catch (e) { /* sin almacenamiento: se queda en oscuro */ }
+      if (localStorage.getItem("ondaviva.tema") === "oscuro") document.documentElement.dataset.tema = "oscuro";
+    } catch (e) { /* sin almacenamiento: se queda en claro */ }
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
@@ -76,7 +76,7 @@
         </svg>
         <span class="marca__texto">
           <strong>Relévame</strong>
-          <span>Onda Viva · relevos</span>
+          <span>Onda Viva · Coordinación</span>
         </span>
       </a>
 
@@ -93,13 +93,15 @@
         <span class="al-aire__texto">Fuera del aire</span>
       </div>
 
-      <button class="cab-boton" type="button" id="boton-tema" aria-label="Cambiar a tema claro" title="Cambiar tema (T)">
-        <svg class="icono icono-luna" aria-hidden="true"><use href="#i-luna"/></svg>
-        <svg class="icono icono-sol" aria-hidden="true"><use href="#i-sol"/></svg>
-      </button>
-      <button class="cab-boton" type="button" data-accion="guia" aria-label="Ayuda y atajos" title="Ayuda (?)">
-        <svg class="icono" aria-hidden="true"><use href="#i-ayuda"/></svg>
-      </button>
+      <div class="cabecera__herramientas">
+        <button class="cab-boton" type="button" id="boton-tema" aria-label="Cambiar a tema oscuro" title="Cambiar tema (T)">
+          <svg class="icono icono-luna" aria-hidden="true"><use href="#i-luna"/></svg>
+          <svg class="icono icono-sol" aria-hidden="true"><use href="#i-sol"/></svg>
+        </button>
+        <button class="cab-boton" type="button" data-accion="guia" aria-label="Ayuda y atajos" title="Ayuda (?)">
+          <svg class="icono" aria-hidden="true"><use href="#i-ayuda"/></svg>
+        </button>
+      </div>
     </div>
   </header>
 

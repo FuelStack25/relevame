@@ -10,11 +10,11 @@ function icono(id, clase = "icono") {
   return `<svg class="${clase}" aria-hidden="true"><use href="#${id}"/></svg>`;
 }
 
-/** Insignia de estado: siempre ícono + palabra (nunca solo color). */
+/** Insignia de estado: punto de color + palabra (nunca solo color). */
 function insigniaEstado(estado) {
   const info = ESTADOS[estado];
   if (!info) return "";
-  return `<span class="insignia insignia--${estado}">${icono(info.icono)}${info.texto}</span>`;
+  return `<span class="insignia insignia--${estado}"><span class="insignia__punto" aria-hidden="true"></span>${info.texto}</span>`;
 }
 
 /**

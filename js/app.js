@@ -165,13 +165,14 @@ function marcarSinCubrir(id) {
 
 const CLAVE_TEMA = "ondaviva.tema";
 
+// Claro por defecto; el oscuro es opcional y se recuerda en este navegador
 function temaActual() {
-  return document.documentElement.dataset.tema === "claro" ? "claro" : "oscuro";
+  return document.documentElement.dataset.tema === "oscuro" ? "oscuro" : "claro";
 }
 
 function cambiarTema() {
   const nuevo = temaActual() === "claro" ? "oscuro" : "claro";
-  if (nuevo === "claro") document.documentElement.dataset.tema = "claro";
+  if (nuevo === "oscuro") document.documentElement.dataset.tema = "oscuro";
   else delete document.documentElement.dataset.tema;
   try { localStorage.setItem(CLAVE_TEMA, nuevo); } catch (e) { /* sin almacenamiento */ }
   pintarBotonTema();

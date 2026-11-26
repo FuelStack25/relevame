@@ -14,7 +14,7 @@ index.html               Estructura, íconos SVG y diálogos
 manifest.webmanifest     Datos de la app instalable (nombre, ícono, colores)
 sw.js                    Service worker: copia local para abrir sin internet
 icons/                   Ícono de la app
-css/estilos.css          Estilo "Consola de cabina": tema oscuro y claro, celular primero, impresión
+css/estilos.css          Estilo "Despacho": sobrio, claro por defecto (oscuro opcional), menú lateral en computador, impresión
 js/formato.js            Fechas y horas en español
 js/almacen.js            Guardar y leer en localStorage
 js/reglas.js             Reglas del negocio (validaciones, 3 por semana, choques, sugerencias, ausencias, contador)
@@ -57,7 +57,7 @@ js/app.js                Arranque, navegación, tema, atajos y app instalable
 - **Guía de primer uso** de 5 pasos y botón de ayuda.
 - **Ficha del presentador**: cupo, saldo, horas e historial de cada persona.
 - **Parrilla semanal** tipo emisora y **medidor VU** del programa que está al aire.
-- **Tema oscuro / claro** y **atajos de teclado**: `N` relevo, `A` ausencia, `R` proponer, `C` cabina, `V` dictar, `/` buscar, `1`–`5` pantallas, `T` tema, `?` ayuda.
+- **Diseño sobrio «Despacho»** (IBM Plex, un solo acento azul marino, estados discretos) con **tema oscuro opcional** y **atajos de teclado**: `N` relevo, `A` ausencia, `R` proponer, `C` cabina, `V` dictar, `/` buscar, `1`–`5` pantallas, `T` tema, `?` ayuda.
 - **App instalable** que funciona sin internet.
 - **Nada pendiente se pierde**: los pendientes que ya pasaron siguen en *Hoy* con respuesta en un toque
   (*Se cubrió* / *No salió*, con Deshacer), y la pestaña *Hoy* muestra cuántos hay por resolver.
