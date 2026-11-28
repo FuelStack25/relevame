@@ -11,7 +11,7 @@
 const Cabina = { reloj: null, despierta: null, volverA: null };
 
 // Lo que queda detrás de la cabina: se vuelve "inerte" (ni clic ni teclado) mientras está abierta
-const FONDO_CABINA = ["header.cabecera", "#aviso-ejemplo", "#contenido"];
+const FONDO_CABINA = ["header.cabecera", ".barra", "#aviso-ejemplo", "#contenido"];
 
 function cabinaAbierta() {
   return !document.getElementById("cabina").hidden;

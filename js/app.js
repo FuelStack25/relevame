@@ -36,6 +36,10 @@ function mostrarVista({ enfocar = false } = {}) {
     else enlace.removeAttribute("aria-current");
   });
   VISTAS[activa]();
+  // Píldora de la barra superior con la sección actual (mismo ícono que el menú)
+  const enlace = document.querySelector(`.nav__enlace[data-vista="${activa}"]`);
+  document.getElementById("barra-seccion").innerHTML =
+    `${enlace.querySelector("svg").outerHTML}<span>${enlace.querySelector("span").textContent}</span>`;
   if (enfocar) {
     window.scrollTo(0, 0);
     // Si se llegó con irA(), el foco va al elemento pedido; si no, al título
@@ -85,6 +89,10 @@ function pintarCabecera() {
   const insignia = document.getElementById("nav-insignia");
   insignia.hidden = porResolver === 0;
   insignia.innerHTML = `${porResolver}<span class="solo-lector"> por resolver</span>`;
+  // Píldora de la barra superior (computador): lleva a Hoy
+  const pildora = document.getElementById("pildora-pendientes");
+  pildora.hidden = porResolver === 0;
+  pildora.innerHTML = `Por resolver <strong>${porResolver}</strong>`;
   document.title = (porResolver ? `(${porResolver}) ` : "") + "Relévame · Onda Viva";
 }
 

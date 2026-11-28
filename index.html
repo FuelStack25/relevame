@@ -20,7 +20,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
@@ -65,7 +65,8 @@
 
   <a class="saltar" href="#contenido">Saltar al contenido</a>
 
-  <!-- ============ CABECERA ============ -->
+  <!-- ============ MENÚ LATERAL ============
+       Computador: barra lateral azul oscuro. Celular: solo el menú de abajo. -->
   <header class="cabecera">
     <div class="cabecera__fila">
       <a class="marca" href="#hoy" aria-label="Relévame, ir a Hoy">
@@ -76,26 +77,50 @@
         </svg>
         <span class="marca__texto">
           <strong>Relévame</strong>
-          <span>Onda Viva · Coordinación</span>
+          <span>Bitácora de relevos</span>
         </span>
       </a>
 
       <nav class="nav" aria-label="Secciones">
+        <span class="nav__seccion" aria-hidden="true">Operación</span>
         <a class="nav__enlace" href="#hoy" data-vista="hoy"><svg class="icono" aria-hidden="true"><use href="#i-inicio"/></svg><span>Hoy</span><span class="nav__insignia" id="nav-insignia" hidden></span></a>
         <a class="nav__enlace" href="#parrilla" data-vista="parrilla"><svg class="icono" aria-hidden="true"><use href="#i-parrilla"/></svg><span>Parrilla</span></a>
         <a class="nav__enlace" href="#bitacora" data-vista="bitacora"><svg class="icono" aria-hidden="true"><use href="#i-lista"/></svg><span>Bitácora</span></a>
+        <span class="nav__seccion" aria-hidden="true">Gestión</span>
         <a class="nav__enlace" href="#reportes" data-vista="reportes"><svg class="icono" aria-hidden="true"><use href="#i-grafica"/></svg><span>Reportes</span></a>
         <a class="nav__enlace" href="#ajustes" data-vista="ajustes"><svg class="icono" aria-hidden="true"><use href="#i-ajustes"/></svg><span>Ajustes</span></a>
       </nav>
 
+      <div class="cabecera__pie">
+        <span class="cabecera__avatar" aria-hidden="true">OV</span>
+        <span class="cabecera__quien"><strong>Coordinación</strong><span>Onda Viva</span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ BARRA SUPERIOR ============
+       Sección actual, estado al aire, pendientes y botones (en celular, también la marca) -->
+  <div class="barra">
+    <div class="barra__izq">
+      <a class="barra__marca" href="#hoy" aria-label="Relévame, ir a Hoy">
+        <svg class="marca__barras" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="3" y="10" width="4" height="10" rx="1"/>
+          <rect x="10" y="5" width="4" height="15" rx="1"/>
+          <rect x="17" y="12" width="4" height="8" rx="1"/>
+        </svg>
+      </a>
+      <strong class="barra__emisora">Onda Viva</strong>
+      <span class="pildora barra__seccion" id="barra-seccion"></span>
+    </div>
+    <div class="barra__der">
+      <a class="pildora pildora--pendientes" href="#hoy" id="pildora-pendientes" hidden></a>
       <div class="al-aire" id="al-aire" role="status" aria-live="polite">
         <span class="al-aire__punto" aria-hidden="true"></span>
         <span class="al-aire__texto">Fuera del aire</span>
       </div>
-
       <div class="cabecera__herramientas">
         <!-- Solo aparece si el servidor tiene la IA activa (asistente.js) -->
-        <button class="cab-boton cab-boton--texto" type="button" id="boton-asistente" title="Asistente con IA" aria-label="Asistente con IA" hidden>
+        <button class="cab-boton cab-boton--texto" type="button" id="boton-asistente" title="Asistente de Relévame" aria-label="Asistente de Relévame" hidden>
           <svg class="icono" aria-hidden="true"><use href="#i-chispa"/></svg><span>Asistente</span>
         </button>
         <button class="cab-boton" type="button" id="boton-tema" aria-label="Cambiar a tema oscuro" title="Cambiar tema (T)">
@@ -107,12 +132,12 @@
         </button>
       </div>
     </div>
-  </header>
+  </div>
 
   <!-- Aviso que aparece mientras se ven los datos de ejemplo -->
   <div class="aviso-ejemplo" id="aviso-ejemplo" hidden>
-    <p>Estás viendo <strong>datos de ejemplo</strong>. Puedes probar todo sin miedo.</p>
-    <button class="boton boton--claro boton--chico" type="button" data-accion="empezar-de-cero">Empezar de cero</button>
+    <p><strong>Estás viendo datos de ejemplo.</strong> Puedes registrar, borrar y probar todo sin miedo.</p>
+    <button class="boton boton--oscuro boton--chico" type="button" data-accion="empezar-de-cero">Empezar con mis datos</button>
   </div>
 
   <!-- ============ CONTENIDO ============
