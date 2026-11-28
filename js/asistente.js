@@ -21,6 +21,47 @@ const PREGUNTAS_SUGERIDAS = [
   "¿Quién podría cubrir el próximo pendiente?",
 ];
 
+/* ---------- Botones "llévame ahí" ----------
+   La IA solo puede sugerir estos ids (el servidor descarta los demás).
+   Qué hace cada uno lo decide la app, no la IA. */
+// generica: solo lleva a una pantalla · pantalla: dónde termina (para no repetir botones)
+const ACCIONES_ASISTENTE = {
+  "ir-hoy":              { texto: "Ir a Hoy",          generica: true, pantalla: "hoy",      hacer: () => irA("hoy", "titulo-hoy") },
+  "ir-parrilla":         { texto: "Ir a la Parrilla",  generica: true, pantalla: "parrilla", hacer: () => irA("parrilla", "titulo-parrilla") },
+  "ir-bitacora":         { texto: "Ir a la Bitácora",  generica: true, pantalla: "bitacora", hacer: () => irA("bitacora", "titulo-bitacora") },
+  "ir-reportes":         { texto: "Ir a Reportes",     generica: true, pantalla: "reportes", hacer: () => irA("reportes", "titulo-reportes") },
+  "ir-ajustes":          { texto: "Ir a Ajustes",      generica: true, pantalla: "ajustes",  hacer: () => irA("ajustes", "titulo-ajustes") },
+  "agregar-presentador": { texto: "Agregar presentador",          pantalla: "ajustes",  hacer: () => irA("ajustes", "nueva-persona") },
+  "pegar-presentadores": { texto: "Pegar lista de presentadores", pantalla: "ajustes",  hacer: () => { Ajustes.abrirPegar = true; irA("ajustes", "pegar-personas"); } },
+  "agregar-programa":    { texto: "Agregar programa",             pantalla: "ajustes",  hacer: () => abrirPrograma() },
+  "registrar-relevo":    { texto: "Registrar relevo",             hacer: () => abrirFormulario() },
+  "registrar-ausencia":  { texto: "Registrar ausencia",           hacer: () => abrirAusencia() },
+  "proponer-relevos":    { texto: "Proponer quién cubre",         pantalla: "hoy",      hacer: () => abrirResolver() },
+  "modo-cabina":         { texto: "Abrir modo cabina",            hacer: () => abrirCabina() },
+  "descargar-pdf":       { texto: "Descargar PDF",                pantalla: "reportes", hacer: () => irA("reportes", "boton-pdf") },
+  "descargar-excel":     { texto: "Descargar Excel",              pantalla: "reportes", hacer: () => irA("reportes", "boton-excel") },
+  "exportar-bitacora":   { texto: "Exportar la bitácora a Excel", pantalla: "bitacora", hacer: () => irA("bitacora", "boton-excel") },
+  "copia-seguridad":     { texto: "Copia de seguridad",           pantalla: "ajustes",  hacer: () => irA("ajustes", "boton-copia") },
+  "ver-guia":            { texto: "Ver la guía",                  hacer: () => abrirGuia() },
+};
+
+/** Ordena las acciones sugeridas: primero las específicas; quita "Ir a X" si ya hay una de esa pantalla. */
+function accionesParaMostrar(ids) {
+  const validas = [...new Set((ids || []).filter(id => ACCIONES_ASISTENTE[id]))];
+  const especificas = validas.filter(id => !ACCIONES_ASISTENTE[id].generica);
+  const pantallasCubiertas = new Set(especificas.map(id => ACCIONES_ASISTENTE[id].pantalla).filter(Boolean));
+  const genericas = validas.filter(id => ACCIONES_ASISTENTE[id].generica && !pantallasCubiertas.has(ACCIONES_ASISTENTE[id].pantalla));
+  return [...especificas, ...genericas].slice(0, 3);
+}
+
+/** Cierra el chat y lleva a la opción (resaltándola en pantalla). */
+function hacerAccionAsistente(id) {
+  const accion = ACCIONES_ASISTENTE[id];
+  if (!accion) return;
+  document.getElementById("dialogo-asistente").close();
+  accion.hacer();
+}
+
 /* ---------- Datos de referencia (los calcula la app, no la IA) ---------- */
 
 function contextoAsistente() {
@@ -118,7 +159,9 @@ function prepararAsistente() {
   });
   document.getElementById("asistente-mensajes").addEventListener("click", evento => {
     const sugerida = evento.target.closest("[data-pregunta]");
-    if (sugerida) preguntar(sugerida.dataset.pregunta);
+    if (sugerida) return preguntar(sugerida.dataset.pregunta);
+    const accion = evento.target.closest("[data-accion-asistente]");
+    if (accion) hacerAccionAsistente(accion.dataset.accionAsistente);
   });
   // El botón aparece solo cuando el servidor confirma que hay IA
   const mostrarBoton = () => { document.getElementById("boton-asistente").hidden = !IA.activa; };
@@ -160,9 +203,16 @@ function pintarAsistente() {
         ${PREGUNTAS_SUGERIDAS.map(p => `<button type="button" class="chip" data-pregunta="${esc(p)}">${esc(p)}</button>`).join("")}
       </div>
     </div>`;
+  const botones = acciones => {
+    const ids = accionesParaMostrar(acciones);
+    return ids.length
+      ? `<div class="chat__acciones">${ids.map((id, i) =>
+          `<button type="button" class="boton ${i === 0 ? "boton--principal" : "boton--borde"} boton--chico" data-accion-asistente="${id}">${esc(ACCIONES_ASISTENTE[id].texto)} ${icono("i-flecha")}</button>`).join("")}</div>`
+      : "";
+  };
   const conversacion = Asistente.mensajes.map(m => m.rol === "usuario"
     ? `<div class="chat__mensaje chat__mensaje--usuario"><p>${esc(m.texto)}</p></div>`
-    : `<div class="chat__mensaje chat__mensaje--asistente${m.error ? " chat__mensaje--error" : ""}">${m.error ? `<p>${esc(m.texto)}</p>` : formatoRespuesta(m.texto)}</div>`).join("");
+    : `<div class="chat__mensaje chat__mensaje--asistente${m.error ? " chat__mensaje--error" : ""}">${m.error ? `<p>${esc(m.texto)}</p>` : formatoRespuesta(m.texto) + botones(m.acciones)}</div>`).join("");
   const escribiendo = Asistente.esperando
     ? `<div class="chat__mensaje chat__mensaje--asistente chat__escribiendo" aria-label="El asistente está escribiendo"><span></span><span></span><span></span></div>`
     : "";
@@ -193,7 +243,7 @@ async function preguntar(texto) {
     });
     const json = await respuesta.json().catch(() => ({}));
     if (!respuesta.ok) throw new Error(json.error || "No se pudo consultar la IA.");
-    Asistente.mensajes.push({ rol: "asistente", texto: json.respuesta });
+    Asistente.mensajes.push({ rol: "asistente", texto: json.respuesta, acciones: Array.isArray(json.acciones) ? json.acciones : [] });
   } catch (e) {
     Asistente.mensajes.push({
       rol: "asistente", error: true,

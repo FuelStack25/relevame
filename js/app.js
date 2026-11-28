@@ -47,8 +47,15 @@ function mostrarVista({ enfocar = false } = {}) {
     const destino = enfocarAlMostrar && document.getElementById(enfocarAlMostrar);
     enfocarAlMostrar = null;
     if (destino) {
+      // Un título no recibe el foco a menos que se le permita
+      if (!destino.matches("a[href], button, input, select, textarea, [tabindex]")) destino.setAttribute("tabindex", "-1");
       destino.scrollIntoView({ block: "center" });
       destino.focus({ preventScroll: true });
+      // Se resalta un momento para que se vea a dónde llegó (por ejemplo, desde el asistente)
+      destino.classList.remove("destacado");
+      void destino.offsetWidth; // reinicia la animación si ya la tenía
+      destino.classList.add("destacado");
+      setTimeout(() => destino.classList.remove("destacado"), 2600);
       return;
     }
     const titulo = document.getElementById(`titulo-${activa}`);

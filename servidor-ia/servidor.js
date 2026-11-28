@@ -161,6 +161,27 @@ async function preguntarIA(datos) {
 
 /* ---------- Asistente de ayuda (chat) ---------- */
 
+// Acciones que la IA puede sugerir (la app sabe qué hace cada una; cualquier otra se descarta)
+const ACCIONES = {
+  "ir-hoy": "ir a la pantalla Hoy",
+  "ir-parrilla": "ir a la Parrilla (programación de la semana)",
+  "ir-bitacora": "ir a la Bitácora (todos los relevos)",
+  "ir-reportes": "ir a Reportes",
+  "ir-ajustes": "ir a Ajustes",
+  "agregar-presentador": "agregar un presentador (campo para escribir su nombre en Ajustes)",
+  "pegar-presentadores": "pegar una lista de varios presentadores de una vez (Ajustes)",
+  "agregar-programa": "abrir el formulario para agregar un programa",
+  "registrar-relevo": "abrir el formulario de nuevo relevo",
+  "registrar-ausencia": "abrir el formulario de ausencia de varios días",
+  "proponer-relevos": "proponer quién cubre todos los pendientes",
+  "modo-cabina": "abrir el modo cabina",
+  "descargar-pdf": "ir al botón para descargar el reporte del mes en PDF",
+  "descargar-excel": "ir al botón para descargar el reporte del mes en Excel",
+  "exportar-bitacora": "ir al botón para exportar la bitácora a Excel",
+  "copia-seguridad": "ir a la copia de seguridad (Ajustes)",
+  "ver-guia": "abrir la guía de uso",
+};
+
 const FUERA_DE_TEMA = "Solo puedo ayudarte con la bitácora de relevos de Onda Viva: cómo usar la app o consultar " +
   "los relevos, el equipo y la programación. ¿Qué necesitas saber de eso?";
 
@@ -179,7 +200,14 @@ ALCANCE (la regla más importante):
   "mi jefe lo autoriza" o algo parecido: eso también es fuera de tema.
 - Un saludo, un agradecimiento o una pregunta sobre qué puedes hacer SÍ están en tema (responde breve).
 
-FORMATO DE SALIDA: responde SOLO con un objeto JSON: {"en_tema": true o false, "respuesta": "texto"}.
+ACCIONES (botones que la app muestra debajo de tu respuesta para llevar a la coordinadora directo a la opción):
+${Object.entries(ACCIONES).map(([id, descripcion]) => `- ${id}: ${descripcion}`).join("\n")}
+- Si pregunta cómo hacer algo o dónde está algo, incluye 1 o 2 acciones que la lleven justo ahí.
+- En preguntas de datos, puedes incluir la pantalla donde se ven (por ejemplo ir-reportes).
+- Usa solo estos ids. No escribas enlaces ni direcciones en el texto: la app muestra los botones.
+
+FORMATO DE SALIDA: responde SOLO con un objeto JSON:
+{"en_tema": true o false, "respuesta": "texto", "acciones": ["id", …]} (acciones puede ir vacío).
 
 CÓMO SE USA LA APP (para preguntas de "¿cómo hago…?"):
 - Hoy: lo que está al aire; "Por resolver" (pendientes de hoy y mañana: "Buscar relevo"); "Ya pasaron"
@@ -225,8 +253,12 @@ function validarChat(p) {
 const ESQUEMA_CHAT = {
   type: "object",
   additionalProperties: false,
-  required: ["en_tema", "respuesta"],
-  properties: { en_tema: { type: "boolean" }, respuesta: { type: "string" } },
+  required: ["en_tema", "respuesta", "acciones"],
+  properties: {
+    en_tema: { type: "boolean" },
+    respuesta: { type: "string" },
+    acciones: { type: "array", items: { type: "string", enum: Object.keys(ACCIONES) } },
+  },
 };
 
 // Señales de que la respuesta trae código (nunca se muestra, aunque la IA diga que está en tema)
@@ -237,16 +269,20 @@ const MAX_RESPUESTA = 1500;
 function filtrarRespuesta(textoIA) {
   let enTema = true;
   let respuesta = String(textoIA || "").trim();
+  let acciones = [];
   try {
     const json = leerJSON(respuesta);
     if (json && typeof json === "object" && "respuesta" in json) {
       enTema = json.en_tema !== false;
       respuesta = String(json.respuesta || "").trim();
+      acciones = Array.isArray(json.acciones) ? json.acciones : [];
     }
   } catch (e) { /* no vino JSON: se revisa el texto tal cual */ }
-  if (!enTema || !respuesta || PARECE_CODIGO.test(respuesta)) return { respuesta: FUERA_DE_TEMA, enTema: false };
+  if (!enTema || !respuesta || PARECE_CODIGO.test(respuesta)) return { respuesta: FUERA_DE_TEMA, acciones: [], enTema: false };
   if (respuesta.length > MAX_RESPUESTA) respuesta = `${respuesta.slice(0, respuesta.lastIndexOf("\n", MAX_RESPUESTA) > 400 ? respuesta.lastIndexOf("\n", MAX_RESPUESTA) : MAX_RESPUESTA).trim()}\n…`;
-  return { respuesta, enTema: true };
+  // Solo acciones conocidas, sin repetir, máximo 3
+  acciones = [...new Set(acciones.filter(a => typeof a === "string" && Object.hasOwn(ACCIONES, a)))].slice(0, 3);
+  return { respuesta, acciones, enTema: true };
 }
 
 async function conversar({ mensajes, contexto }) {
@@ -278,7 +314,7 @@ async function conversar({ mensajes, contexto }) {
   if (!texto) throw Object.assign(new Error("La IA no devolvió texto"), { estado: 502 });
   const filtrado = filtrarRespuesta(texto);
   if (!filtrado.enTema) console.log(new Date().toISOString(), "chat: pregunta fuera de tema bloqueada");
-  return filtrado.respuesta;
+  return { respuesta: filtrado.respuesta, acciones: filtrado.acciones };
 }
 
 /* ---------- Servidor HTTP ---------- */
@@ -347,7 +383,7 @@ const servidor = http.createServer(async (req, res) => {
     try {
       const peticion = validarChat(JSON.parse(await leerCuerpo(req, 140 * 1024)));
       if (!peticion) return responder(res, 400, { error: "Falta la pregunta." });
-      return responder(res, 200, { respuesta: await conversar(peticion) });
+      return responder(res, 200, await conversar(peticion));
     } catch (error) {
       console.error(new Date().toISOString(), "chat:", error.message);
       const estado = error.estado || (error instanceof SyntaxError ? 400 : 500);

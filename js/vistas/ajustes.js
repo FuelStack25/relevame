@@ -6,7 +6,8 @@
    Nivel 3: copia de seguridad y restauración.
    ========================================================== */
 
-const Ajustes = { editandoPersona: null, editandoPrograma: null };
+// abrirPegar: el asistente pide abrir "Pegar una lista" al llegar (se usa una sola vez)
+const Ajustes = { editandoPersona: null, editandoPrograma: null, abrirPegar: false };
 
 function pintarAjustes() {
   const vista = document.getElementById("vista-ajustes");
@@ -48,7 +49,7 @@ function pintarAjustes() {
         <button class="boton boton--principal" type="submit">${icono("i-mas")} Agregar</button>
       </form>
 
-      <details class="pegar" ${datos.presentadores.filter(p => p.activo).length < 2 ? "open" : ""}>
+      <details class="pegar" ${datos.presentadores.filter(p => p.activo).length < 2 || Ajustes.abrirPegar ? "open" : ""}>
         <summary>Pegar una lista de nombres</summary>
         <form class="pegar__form" id="form-pegar" novalidate>
           <div class="campo">
@@ -132,6 +133,7 @@ function pintarAjustes() {
       </div>
     </section>
   `;
+  Ajustes.abrirPegar = false;
 }
 
 /* ---------- Filas ---------- */
