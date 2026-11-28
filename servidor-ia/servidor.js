@@ -83,6 +83,9 @@ Reglas:
   estado "pendiente" y explícalo en "dudas".
 - estado: "cubierto" si hay relevo confirmado; "sin-cubrir" si dice que el programa no salió al aire; si no, "pendiente".
 - fecha en formato AAAA-MM-DD. Resuelve "mañana", "el viernes", "pasado mañana", etc. a partir de hoy.
+  Fíjate en el tiempo del verbo: si habla en pasado ("no salió", "faltó", "lo cubrió", "ayer"), "el sábado" es
+  el sábado más reciente que ya pasó; si habla en presente o futuro ("no viene", "no llega", "va a faltar"),
+  es el próximo.
   "En la mañana" o "por la mañana" es una hora del día, no el día siguiente. Si no se dice la fecha, usa hoy.
 - Si no se dice el programa pero quien falta presenta un solo programa ese día, usa ese programa.
 - Los nombres pueden venir incompletos, con apodos o mal escritos por el dictado: elige la persona más probable
