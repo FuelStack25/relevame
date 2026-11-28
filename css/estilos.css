@@ -611,6 +611,34 @@ select option { background: var(--superficie); color: var(--texto); }
 .sugerencias__ocupados strong { color: var(--texto); font-weight: 600; }
 .sugerencias__ocupados .icono { width: 16px; height: 16px; color: var(--sin-tx); margin-top: 3px; }
 
+/* Asistente con IA (chat de ayuda) */
+.cab-boton--texto { width: auto; gap: 6px; padding: 0 12px; font-size: 14px; font-weight: 600; color: var(--acento-texto); }
+.cab-boton--texto .icono { width: 16px; height: 16px; }
+.chat { display: flex; flex-direction: column; gap: var(--e3); background: var(--fondo); }
+.chat__aviso { margin-top: 2px; font-size: 12px; color: var(--texto-suave); line-height: 1.4; }
+.chat__mensaje {
+  display: flex; flex-direction: column; gap: var(--e2); max-width: 90%;
+  padding: var(--e3) var(--e4); border-radius: var(--radio); font-size: 14px; line-height: 1.55;
+}
+.chat__mensaje ul { list-style: disc; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.chat__mensaje--asistente { align-self: flex-start; background: var(--superficie); border: 1px solid var(--borde); }
+.chat__mensaje--usuario { align-self: flex-end; background: var(--acento); color: var(--sobre-acento); white-space: pre-wrap; }
+.chat__mensaje--error { background: var(--sin-bg); border-color: var(--sin-borde); color: var(--sin-tx); }
+.chat__sugeridas { display: flex; flex-wrap: wrap; gap: var(--e2); }
+.chat__sugeridas .chip { min-height: 36px; height: auto; padding: 6px 10px; text-align: left; line-height: 1.3; font-weight: 500; }
+.chat__escribiendo { flex-direction: row; align-items: center; gap: 5px; padding: var(--e4); }
+.chat__escribiendo span { width: 6px; height: 6px; border-radius: 50%; background: var(--texto-suave); animation: latido 1.2s ease-in-out infinite; }
+.chat__escribiendo span:nth-child(2) { animation-delay: 0.2s; }
+.chat__escribiendo span:nth-child(3) { animation-delay: 0.4s; }
+.chat__pie { flex-wrap: nowrap; align-items: flex-end; }
+.chat__pie textarea { flex: 1; min-height: 44px; max-height: 140px; resize: none; }
+.chat__pie .boton { flex: none; width: 48px; padding: 0; }
+@media (max-width: 1023px) {
+  /* En celular, el botón del asistente se queda solo con el ícono */
+  .cab-boton--texto { width: 40px; padding: 0; }
+  .cab-boton--texto span { display: none; }
+}
+
 /* Dictar el relevo por voz */
 .dictado { display: flex; flex-direction: column; gap: var(--e2); margin-bottom: var(--e4); padding-bottom: var(--e4); border-bottom: 1px dashed var(--borde-fuerte); }
 .dictado .ayuda { font-style: italic; }

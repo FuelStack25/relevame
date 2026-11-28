@@ -94,6 +94,10 @@
       </div>
 
       <div class="cabecera__herramientas">
+        <!-- Solo aparece si el servidor tiene la IA activa (asistente.js) -->
+        <button class="cab-boton cab-boton--texto" type="button" id="boton-asistente" title="Asistente con IA" aria-label="Asistente con IA" hidden>
+          <svg class="icono" aria-hidden="true"><use href="#i-chispa"/></svg><span>Asistente</span>
+        </button>
         <button class="cab-boton" type="button" id="boton-tema" aria-label="Cambiar a tema oscuro" title="Cambiar tema (T)">
           <svg class="icono icono-luna" aria-hidden="true"><use href="#i-luna"/></svg>
           <svg class="icono icono-sol" aria-hidden="true"><use href="#i-sol"/></svg>
@@ -322,6 +326,28 @@
     </form>
   </dialog>
 
+  <!-- ============ ASISTENTE CON IA (chat de ayuda) ============ -->
+  <dialog class="panel" id="dialogo-asistente" aria-labelledby="titulo-asistente">
+    <form class="form" id="form-asistente" novalidate>
+      <header class="panel__cabecera">
+        <div class="panel__titulos">
+          <h2 id="titulo-asistente">Asistente</h2>
+          <p class="chat__aviso">Con IA de Google: tus preguntas y los datos de la bitácora se envían a ese servicio. Solo responde; no cambia nada.</p>
+        </div>
+        <button class="boton boton--texto boton--chico" type="button" id="asistente-nuevo">Nueva</button>
+        <button class="boton-icono" type="button" data-cerrar aria-label="Cerrar"><svg class="icono" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </header>
+      <div class="panel__cuerpo chat" id="asistente-mensajes" aria-live="polite"></div>
+      <footer class="panel__pie chat__pie">
+        <label class="solo-lector" for="asistente-texto">Escribe tu pregunta</label>
+        <textarea id="asistente-texto" rows="1" maxlength="1500" placeholder="Escribe tu pregunta…"></textarea>
+        <button class="boton boton--principal" type="submit" id="asistente-enviar" aria-label="Enviar pregunta">
+          <svg class="icono" aria-hidden="true"><use href="#i-flecha"/></svg>
+        </button>
+      </footer>
+    </form>
+  </dialog>
+
   <!-- ============ MODO CABINA (pantalla del estudio) ============ -->
   <!-- No es un <dialog>: así puede ponerse en pantalla completa por sí sola,
        sin depender de que el navegador lo permita para abrirse. -->
@@ -417,6 +443,7 @@
   <script src="js/voz.js"></script>
   <script src="js/xlsx.js"></script>
   <script src="js/informe.js"></script>
+  <script src="js/asistente.js"></script>
   <script src="js/vistas/hoy.js"></script>
   <script src="js/vistas/parrilla.js"></script>
   <script src="js/vistas/bitacora.js"></script>

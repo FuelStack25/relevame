@@ -29,6 +29,7 @@ js/resolver.js           Proponer quién cubre todos los pendientes de una vez
 js/cabina.js             Modo Cabina: pantalla del estudio
 js/voz.js                Dictar un relevo por voz (entiende quién falta, programa, día y quién cubre)
 js/xlsx.js               Crea archivos de Excel (.xlsx) sin librerías: XML + ZIP hechos a mano
+js/asistente.js          Chat de ayuda con IA: arma los datos de referencia y muestra las respuestas de forma segura
 js/informe.js            Reporte mensual en PDF (con jsPDF) y en Excel, con los mismos datos
 lib/                     jsPDF 2.5.1 y jsPDF-AutoTable 3.8.4 (licencia MIT), copiadas para que funcione sin internet
 servidor-ia/             Intermediario de IA para el VPS (Node, sin dependencias): guarda la clave y habla con la IA
@@ -83,6 +84,9 @@ El **Excel** no usa librerías: un `.xlsx` es un ZIP con archivos XML, y `js/xls
 - **Cuéntalo con tus palabras, con IA** (`V` para dictar): se escribe o se dicta como se habla —«Lau amaneció con fiebre,
   no llega mañana a lo de las 7; de pronto la cubre Andrés»— y la IA llena el formulario. Si algo es dudoso, lo deja
   pendiente y lo explica. La clave vive solo en el servidor (`servidor-ia/`); sin IA, la app entiende en modo básico.
+- **Asistente con IA** (botón *Asistente*): responde cómo usar la app y preguntas sobre los relevos («¿quién ha
+  cubierto más este mes?»). La app calcula los datos y rankings con sus reglas y la IA solo los explica: no inventa
+  cifras ni cambia nada. Solo aparece si el servidor tiene la IA activa.
 - **Resumen de la semana por WhatsApp** para el grupo del equipo, desde Hoy o la Parrilla.
 - **Mapa de calor** en Reportes: qué días y horas necesitan más relevos y dónde un programa no salió al aire.
 

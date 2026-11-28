@@ -330,6 +330,7 @@ function iniciar() {
   prepararResolver();
   prepararCabina();
   prepararVoz();
+  prepararAsistente();
   prepararParrilla();
   prepararBitacora();
   prepararReportes();

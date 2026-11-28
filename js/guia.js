@@ -36,7 +36,8 @@ const PASOS_GUIA = [
   {
     icono: "i-grafica",
     titulo: "Reportes y atajos",
-    texto: `<p>En <strong>Reportes</strong> está el resumen del mes, el contador por presentador y el botón para imprimir o guardar en PDF.</p>
+    texto: `<p>En <strong>Reportes</strong> está el resumen del mes, el contador por presentador y la descarga en PDF y en Excel.</p>
+            <p>¿Dudas? El botón <strong>Asistente</strong> de arriba responde cómo hacer algo o preguntas sobre los relevos.</p>
             <div class="guia__atajos">
               <kbd>N</kbd><span>Registrar relevo</span>
               <kbd>A</kbd><span>Registrar ausencia</span>

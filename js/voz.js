@@ -199,6 +199,7 @@ async function consultarEstadoIA() {
     IA.activa = false;
   }
   pintarAvisoDictado();
+  document.dispatchEvent(new Event("ia-estado")); // avisa al asistente (asistente.js)
 }
 
 /**

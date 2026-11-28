@@ -9,6 +9,10 @@ Navegador ──POST /api/ia/entender──▶ servidor.js (127.0.0.1:3017) ─�
 ```
 
 - **Sin dependencias:** solo Node 18+ (`fetch` viene incorporado).
+- Rutas:
+  - `GET /api/ia/estado`: dice si la IA está activa (la app muestra u oculta sus funciones de IA).
+  - `POST /api/ia/entender`: convierte lo que se escribe o dicta en los datos de un relevo (JSON revisado).
+  - `POST /api/ia/chat`: el asistente de ayuda. Lleva un manual de la app y los datos que calcula la app.
 - **Cualquier IA con formato de chat de OpenAI:** Google Gemini (tiene plan gratuito), Groq, OpenRouter, OpenAI…
 - **Si no hay clave o la IA falla**, la app usa su entendimiento básico (`js/voz.js`) y sigue funcionando.
 - Lo que responde la IA **se revisa** antes de usarlo: solo pasan ids del equipo y programas, fechas válidas y estados conocidos.
